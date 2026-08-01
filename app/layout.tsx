@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
 import { headers } from "next/headers";
 
+import { BookPublishingCta } from "@/components/book-submissions/book-publishing-cta";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ThemeProvider } from "@/components/shared/theme-provider";
@@ -92,6 +93,7 @@ export default async function RootLayout({
         <ThemeProvider>
           <SiteHeader categories={categories} />
           <div className="flex-1">{children}</div>
+          <BookPublishingCta />
           <SiteFooter settings={settings} categories={categories} />
           <Toaster />
         </ThemeProvider>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
+  BookOpen,
   Bot,
   CalendarDays,
   ExternalLink,
@@ -46,6 +47,7 @@ const ICONS: Record<(typeof NAV_ITEMS)[number]["icon"], LucideIcon> = {
   Tags,
   Bot,
   Sparkles,
+  BookOpen,
   ScrollText,
   Settings,
 };

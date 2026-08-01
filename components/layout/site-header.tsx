@@ -32,6 +32,7 @@ const PRIMARY_SLUGS = new Set([
 export const CORPORATE_NAV: NavItem[] = [
   { label: "Hakkımızda", href: "/hakkimizda" },
   { label: "Kaynaklar", href: "/kaynaklar" },
+  { label: "Kitap Yayınlat", href: "/kitap-yayinlat" },
   { label: "Editoryal politika", href: "/editoryal-politika" },
   { label: "Gizlilik", href: "/gizlilik" },
   { label: "Kullanım koşulları", href: "/kullanim-kosullari" },

@@ -40,6 +40,11 @@ export const NAV_ITEMS = [
   { href: "/admin/tags", label: "Etiketler", icon: "Tags" },
   { href: "/admin/automation", label: "Otomasyon", icon: "Bot" },
   { href: "/admin/ai-jobs", label: "AI İşlemleri", icon: "Sparkles" },
+  {
+    href: "/admin/book-submissions",
+    label: "Kitap Başvuruları",
+    icon: "BookOpen",
+  },
   { href: "/admin/logs", label: "Sistem Logları", icon: "ScrollText" },
   { href: "/admin/settings", label: "Ayarlar", icon: "Settings" },
 ] as const;

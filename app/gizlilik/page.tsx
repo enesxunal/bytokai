@@ -84,6 +84,22 @@ export default async function PrivacyPage() {
 
           <section className="space-y-3">
             <h2 className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+              Kitap yayın başvuruları
+            </h2>
+            <p>
+              Kitap yayınlatma formu üzerinden ilettiğiniz ad soyad, e-posta,
+              telefon, eser bilgileri, özet, yazar biyografisi ve yüklediğiniz
+              dosya; editoryal değerlendirme, dosya inceleme ve sizinle iletişim
+              kurmak amacıyla işlenir.
+            </p>
+            <p>
+              Bu veriler pazarlama veya bülten aboneliği için otomatik
+              kullanılmaz. Başvuru onayı, bülten aboneliğinden ayrıdır.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="font-serif text-2xl font-semibold tracking-tight text-foreground">
               Çerezler ve benzer teknolojiler
             </h2>
             <p>

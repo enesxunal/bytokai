@@ -13,6 +13,7 @@ type SiteFooterProps = {
 const CORPORATE_LINKS = [
   { label: "Hakkımızda", href: "/hakkimizda" },
   { label: "Editoryal politika", href: "/editoryal-politika" },
+  { label: "Kitap Yayınlat", href: "/kitap-yayinlat" },
   { label: "Kaynaklar", href: "/kaynaklar" },
   { label: "Gizlilik", href: "/gizlilik" },
   { label: "Kullanım koşulları", href: "/kullanim-kosullari" },
