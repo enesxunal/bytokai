@@ -20,24 +20,6 @@ END;
 $$;
 
 -- ---------------------------------------------------------------------------
--- Helper: is_admin() for RLS
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.profiles p
-    WHERE p.id = auth.uid()
-      AND p.role = 'admin'
-  );
-$$;
-
--- ---------------------------------------------------------------------------
 -- profiles
 -- ---------------------------------------------------------------------------
 CREATE TABLE public.profiles (
@@ -54,6 +36,24 @@ CREATE TRIGGER profiles_set_updated_at
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.set_updated_at();
+
+-- ---------------------------------------------------------------------------
+-- Helper: is_admin() for RLS (profiles tablosundan sonra tanımlanmalı)
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles p
+    WHERE p.id = auth.uid()
+      AND p.role = 'admin'
+  );
+$$;
 
 -- ---------------------------------------------------------------------------
 -- authors

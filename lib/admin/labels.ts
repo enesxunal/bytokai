@@ -1,6 +1,5 @@
 import type {
   DbArticleStatus,
-  DbJobRunStatus,
   DbRawArticleStatus,
 } from "@/lib/database/types";
 
@@ -22,11 +21,12 @@ export const RAW_STATUS_LABELS: Record<DbRawArticleStatus, string> = {
   skipped: "Atlandı",
 };
 
-export const JOB_STATUS_LABELS: Record<DbJobRunStatus, string> = {
+export const JOB_STATUS_LABELS: Record<string, string> = {
   running: "Çalışıyor",
   success: "Başarılı",
   partial: "Kısmi",
   failed: "Başarısız",
+  skipped: "Atlandı",
 };
 
 export const NAV_ITEMS = [
