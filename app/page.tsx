@@ -105,6 +105,7 @@ function MetaRow({
           {article.category.name}
         </Badge>
       ) : null}
+      {article.author ? <span>{article.author.name}</span> : null}
       {date ? (
         <time dateTime={article.published_at ?? undefined}>{date}</time>
       ) : null}
@@ -288,44 +289,59 @@ function sectionTitleFallback(slug: string): string {
   return map[slug] ?? slug;
 }
 
+function publicBio(text: string | null | undefined): string {
+  if (!text) return "";
+  return text
+    .replace(/\beditoryal personası\b/gi, "yazar")
+    .replace(/\bpersonası\b/gi, "yazar")
+    .replace(/\bpersona\b/gi, "yazar")
+    .replace(/\bkurgusal bir editoryal ses[^.]*\./gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 function AuthorsSection({ authors }: { authors: DbAuthor[] }) {
   if (authors.length === 0) return null;
 
   return (
     <section id="yazarlar" className="scroll-mt-24">
       <SectionHeading
-        title="Editoryal Sesler"
-        description="Farklı uzmanlık alanlarını temsil eden BYTOK AI editoryal personaları."
+        title="Yazarlar"
+        description="BYTOK AI yayınında farklı uzmanlık alanlarında yazan yazarlar."
       />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-        {authors.map((author) => (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {authors.map((author) => {
+          const bio = publicBio(author.short_bio);
+          return (
           <Link
             key={author.id}
             href={`/yazar/${author.slug}`}
-            className="flex gap-3 rounded-xl border border-border/70 bg-card p-3.5 transition-colors hover:border-primary/35"
+            className="flex gap-3.5 rounded-xl border border-border/70 bg-card p-4 transition-colors hover:border-primary/35"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={authorAvatarUrl(author)}
               alt=""
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-full bg-muted"
+              width={48}
+              height={48}
+              className="h-12 w-12 shrink-0 rounded-full bg-muted"
             />
             <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-foreground/55">
-                BYTOK AI editoryal personası
-              </p>
-              <h3 className="mt-0.5 font-serif text-base font-semibold tracking-tight">
+              <h3 className="font-serif text-lg font-semibold tracking-tight">
                 {author.name}
               </h3>
-              <p className="text-xs font-medium text-primary">{author.role}</p>
-              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-foreground/65">
-                {author.short_bio}
+              <p className="mt-0.5 text-sm font-medium text-primary">
+                {author.role}
               </p>
+              {bio ? (
+                <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-foreground/65">
+                  {bio}
+                </p>
+              ) : null}
             </div>
           </Link>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
@@ -335,26 +351,39 @@ function NewsletterSection({ enabled }: { enabled: boolean }) {
   if (!enabled) return null;
 
   return (
-    <section
-      id="bulten"
-      className="scroll-mt-24 overflow-hidden rounded-2xl border border-border/70 bg-card"
-    >
-      <div className="relative px-6 py-8 sm:px-10 sm:py-10">
+    <section id="bulten" className="scroll-mt-24" aria-labelledby="bulten-heading">
+      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-[#0b1220] text-white">
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-brand opacity-[0.05]"
+          className="pointer-events-none absolute inset-0 opacity-90"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 70% at 10% 0%, rgba(21,101,239,0.35), transparent 55%), radial-gradient(ellipse 60% 50% at 100% 100%, rgba(29,78,216,0.25), transparent 50%), linear-gradient(135deg, #070b14 0%, #0b1220 45%, #0d1b33 100%)",
+          }}
           aria-hidden
         />
-        <div className="relative mx-auto max-w-2xl text-center">
-          <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-[1.75rem]">
-            Haftalık BYTOK bülteni
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-foreground/70 sm:text-base">
-            Yapay zekâ, geliştirici ekosistemi ve iş dünyasından seçilmiş
-            haberleri e-posta kutunuza alın.
-          </p>
-          <div className="mx-auto mt-5 max-w-md">
-            <NewsletterForm id="home-newsletter-email" />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.55) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.55) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+          aria-hidden
+        />
+        <div className="relative grid gap-8 px-5 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-10 lg:px-10 lg:py-11">
+          <div className="space-y-3">
+            <h2
+              id="bulten-heading"
+              className="font-serif text-2xl font-semibold tracking-tight text-white sm:text-[1.75rem] lg:text-[2rem]"
+            >
+              Yapay zekâ gündemini kaçırmayın.
+            </h2>
+            <p className="max-w-xl text-sm leading-relaxed text-white/75 sm:text-base">
+              Haftanın önemli yapay zekâ, teknoloji ve iş dünyası gelişmelerini
+              kısa ve anlaşılır bir özetle e-posta kutunuza alın.
+            </p>
           </div>
+          <NewsletterForm id="home-newsletter-email" tone="on-brand" />
         </div>
       </div>
     </section>

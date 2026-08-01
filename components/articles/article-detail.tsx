@@ -89,7 +89,7 @@ type ArticleDetailProps = {
 };
 
 export function ArticleDetail({ data }: ArticleDetailProps) {
-  const { article, related, settings, bodyHtml, canonicalUrl } = data;
+  const { article, related, bodyHtml, canonicalUrl } = data;
   const publishedLabel = formatDate(article.published_at);
   const author = article.author;
 
@@ -232,13 +232,6 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
           </aside>
         )}
 
-        <aside className="mt-8 border-t border-border/70 pt-5 text-sm leading-relaxed text-foreground/70">
-          <h2 className="mb-1.5 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground/55">
-            Editoryal not
-          </h2>
-          <p className="max-w-2xl">{settings.ai_disclosure_text}</p>
-        </aside>
-
         {author ? (
           <aside className="mt-8 rounded-xl border border-border/70 bg-card p-4 sm:p-5">
             <div className="flex gap-3.5">
@@ -252,7 +245,7 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
               />
               <div className="min-w-0">
                 <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-foreground/55">
-                  BYTOK AI editoryal personası
+                  Yazar
                 </p>
                 <h2 className="mt-1 font-serif text-lg font-semibold tracking-tight">
                   <Link
@@ -263,9 +256,14 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
                   </Link>
                 </h2>
                 <p className="text-sm font-medium text-primary">{author.role}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-foreground/70">
-                  {author.short_bio}
-                </p>
+                {author.short_bio ? (
+                  <p className="mt-1.5 text-sm leading-relaxed text-foreground/70">
+                    {author.short_bio
+                      .replace(/\beditoryal personası\b/gi, "yazar")
+                      .replace(/\bpersonası\b/gi, "yazar")
+                      .replace(/\bpersona\b/gi, "yazar")}
+                  </p>
+                ) : null}
               </div>
             </div>
           </aside>

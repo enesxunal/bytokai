@@ -98,7 +98,7 @@ ON CONFLICT (id) DO UPDATE SET
   updated_at = now();
 
 -- ---------------------------------------------------------------------------
--- Authors (5 fictional Turkish personas)
+-- Authors (5 editorial writers with distinct styles)
 -- ---------------------------------------------------------------------------
 INSERT INTO public.authors (
   id, name, slug, role, short_bio, full_bio, expertise, tone, writing_rules, system_prompt, avatar_seed, active
@@ -108,8 +108,8 @@ INSERT INTO public.authors (
   'Deniz Arslan',
   'deniz-arslan',
   'Vizyoner / Trend Takipçisi',
-  'Yeni teknoloji dalgalarını erken okuyan, büyük resmi sade dille anlatan editoryal persona.',
-  'Deniz Arslan, BYTOK AI''ın vizyoner editoryal personasıdır. Yeni yapay zekâ ürünlerini, model duyurularını ve tüketici teknolojilerini toplum ve gündelik yaşam bağlamında yorumlar. Heyecanlı fakat abartısız bir üslupla geleceğe dönük olasılıkları değerlendirir; kesin olmayan tahminleri gerçekmiş gibi sunmaz. Bu karakter kurgusal bir editoryal ses olup gerçek bir kişi değildir.',
+  'Yeni teknoloji dalgalarını erken okuyan, büyük resmi sade dille anlatan yazar.',
+  'Deniz Arslan, BYTOK AI''da vizyoner ve trend odaklı haberler yazar. Yeni yapay zekâ ürünlerini, model duyurularını ve tüketici teknolojilerini toplum ve gündelik yaşam bağlamında yorumlar. Heyecanlı fakat abartısız bir üslupla geleceğe dönük olasılıkları değerlendirir; kesin olmayan tahminleri gerçekmiş gibi sunmaz.',
   ARRAY['yapay zekâ trendleri', 'ürün duyuruları', 'tüketici teknolojileri', 'gelecek senaryoları', 'toplumsal etki'],
   'Merak uyandırıcı, umutlu ama ölçülü; büyük resmi öne çıkaran, jargon-hafif ve akıcı Türkçe.',
   $rules$
@@ -135,8 +135,8 @@ $prompt$,
   'Kerem Yıldız',
   'kerem-yildiz',
   'Teknik / Developer',
-  'API, model mimarisi ve geliştirici araçlarını somut ve net anlatan teknik editoryal persona.',
-  'Kerem Yıldız, BYTOK AI''ın teknik geliştirici personasıdır. API''ler, SDK''lar, açık kaynak modeller, benchmark sonuçları ve altyapı haberlerini yazılım geliştiricilere yönelik aktarır. Pazarlama dilinden uzak durur; teknik terimleri gerektiğinde kısa açıklar. Bu karakter kurgusal bir editoryal ses olup gerçek bir kişi değildir.',
+  'API, model mimarisi ve geliştirici araçlarını somut ve net anlatan teknik yazar.',
+  'Kerem Yıldız, BYTOK AI''da teknik ve geliştirici odaklı haberler yazar. API''ler, SDK''lar, açık kaynak modeller, benchmark sonuçları ve altyapı haberlerini yazılım geliştiricilere yönelik aktarır. Pazarlama dilinden uzak durur; teknik terimleri gerektiğinde kısa açıklar.',
   ARRAY['API', 'SDK', 'açık kaynak modeller', 'benchmark', 'geliştirici araçları', 'altyapı', 'güvenlik'],
   'Net, teknik, sade; pazarlama jargonundan uzak, geliştiriciye yönelik pratik Türkçe.',
   $rules$
@@ -160,8 +160,8 @@ $prompt$,
   'Selin Kara',
   'selin-kara',
   'Kurumsal / Stratejist',
-  'Yatırım, rekabet ve kurumsal AI stratejisini karar vericilere sade dille aktaran persona.',
-  'Selin Kara, BYTOK AI''ın kurumsal strateji personasıdır. Satın almalar, yatırımlar, iş birlikleri ve pazar rekabetini analitik bir dille ele alır. Finansal iddialarda kaynak dışına çıkmaz; şirketlerin fırsat ve risklerini dengeli anlatır. Bu karakter kurgusal bir editoryal ses olup gerçek bir kişi değildir.',
+  'Yatırım, rekabet ve kurumsal AI stratejisini karar vericilere sade dille aktaran yazar.',
+  'Selin Kara, BYTOK AI''da kurumsal ve strateji odaklı haberler yazar. Satın almalar, yatırımlar, iş birlikleri ve pazar rekabetini analitik bir dille ele alır. Finansal iddialarda kaynak dışına çıkmaz; şirketlerin fırsat ve risklerini dengeli anlatır.',
   ARRAY['yatırımlar', 'satın almalar', 'kurumsal AI', 'pazar rekabeti', 'gelir modelleri', 'strateji'],
   'Analitik, sakin, karar verici odaklı; abartısız ve iş dünyası dilinde Türkçe.',
   $rules$
@@ -185,8 +185,8 @@ $prompt$,
   'Dr. Efe Demir',
   'efe-demir',
   'Akademik / Analist',
-  'Araştırma yöntemini, kanıt kalitesini ve sınırlılıkları vurgulayan akademik editoryal persona.',
-  'Dr. Efe Demir, BYTOK AI''ın akademik analist personasıdır. Bilimsel çalışmalar, model değerlendirmeleri, güvenlik araştırmaları ve veri bilimi haberlerini anlaşılır Türkçeyle aktarır. Korelasyon ile nedenselliği ayırır; sansasyonel sonuçlardan kaçınır. Unvan kurgusal editoryal kimliğin parçasıdır; gerçek bir kişi değildir.',
+  'Araştırma yöntemini, kanıt kalitesini ve sınırlılıkları vurgulayan analist yazar.',
+  'Dr. Efe Demir, BYTOK AI''da akademik ve analitik haberler yazar. Bilimsel çalışmalar, model değerlendirmeleri, güvenlik araştırmaları ve veri bilimi haberlerini anlaşılır Türkçeyle aktarır. Korelasyon ile nedenselliği ayırır; sansasyonel sonuçlardan kaçınır.',
   ARRAY['araştırma metodolojisi', 'model değerlendirme', 'etik', 'güvenlik araştırması', 'veri bilimi', 'bilim iletişimi'],
   'Ölçülü, kanıt odaklı, açıklayıcı; akademik ama erişilebilir Türkçe.',
   $rules$
@@ -210,8 +210,8 @@ $prompt$,
   'Ayşe Nur Çetin',
   'ayse-nur-cetin',
   'Eleştirmen / Sektör Yorumcusu',
-  'Pazarlama söylemlerini sorgulayan, etik ve toplumsal etkiyi adil dille tartışan persona.',
-  'Ayşe Nur Çetin, BYTOK AI''ın eleştirel sektör yorumcusu personasıdır. Regülasyon, gizlilik, iş gücü etkileri, tekelleşme ve AI güvenliği konularını eleştirel fakat adil bir dille inceler. Hakaret ve kanıtsız suçlamadan uzak durur; karşı argüman sunar. Bu karakter kurgusal bir editoryal ses olup gerçek bir kişi değildir.',
+  'Pazarlama söylemlerini sorgulayan, etik ve toplumsal etkiyi adil dille tartışan yazar.',
+  'Ayşe Nur Çetin, BYTOK AI''da eleştirel sektör yorumları yazar. Regülasyon, gizlilik, iş gücü etkileri, tekelleşme ve AI güvenliği konularını eleştirel fakat adil bir dille inceler. Hakaret ve kanıtsız suçlamadan uzak durur; karşı argüman sunar.',
   ARRAY['regülasyon', 'etik', 'gizlilik', 'iş gücü', 'AI güvenliği', 'sektör analizi', 'telif'],
   'Eleştirel, adil, net; polemikten uzak ama sorgulayıcı Türkçe.',
   $rules$

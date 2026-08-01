@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Container } from "@/components/shared/container";
-import { getAuthors } from "@/lib/database/authors";
+import { authorAvatarUrl, getAuthors } from "@/lib/database/authors";
 import { getSiteSettings } from "@/lib/database/settings";
 import { absoluteUrl } from "@/lib/listing/helpers";
 
@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const title = "Hakkımızda";
   const description =
-    "BYTOK AI, yapay zekâ haberlerine odaklanan dijital yayın ve yayınevidir. Kaynaklı, özgün ve Türkçe editoryal yaklaşımımızı tanıyın.";
+    "BYTOK AI, yapay zekâ ve teknoloji haberlerine odaklanan Türkçe bir dijital yayındır. Kaynaklı ve özgün editoryal yaklaşımımızı tanıyın.";
   const canonical = absoluteUrl(settings.site_url, "/hakkimizda");
 
   return {
@@ -30,26 +30,31 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const PERSONA_ROLES = [
+const AUTHOR_FOCUS = [
   {
     role: "Vizyoner / Trend Takipçisi",
-    focus: "Yeni ürünler, model duyuruları ve teknoloji dalgalarının büyük resmi.",
+    focus:
+      "Gelecek odaklı anlatım; sektör trendlerini ve olası etkileri öne çıkarır.",
   },
   {
     role: "Teknik / Developer",
-    focus: "API, SDK, açık kaynak ve geliştirici araçlarını net anlatım.",
+    focus:
+      "Teknik ayrıntılar, mimari, araçlar ve geliştirici etkisini açıklar.",
   },
   {
     role: "Kurumsal / Stratejist",
-    focus: "Yatırım, rekabet ve kurumsal yapay zekâ stratejisi.",
+    focus:
+      "Şirketler, pazar, rekabet, yatırım ve iş stratejisi odaklı anlatım.",
   },
   {
     role: "Akademik / Analist",
-    focus: "Araştırma, kanıt kalitesi ve sınırlılıkları öne çıkaran analiz.",
+    focus:
+      "Temkinli, kanıta dayalı; bağlam ve araştırma metodolojisini öne çıkarır.",
   },
   {
     role: "Eleştirmen / Sektör Yorumcusu",
-    focus: "Etik, regülasyon ve toplumsal etkiyi adil dille sorgulama.",
+    focus:
+      "İddiaları sorgular; riskleri, çelişkileri ve toplumsal etkileri ele alır.",
   },
 ] as const;
 
@@ -84,82 +89,93 @@ export default async function AboutPage() {
             Hakkımızda
           </h1>
           <p className="text-lg leading-relaxed text-muted-foreground text-pretty">
-            {settings.site_name}, yapay zekâ haberlerine odaklanan dijital bir
-            yayın ve yayınevidir. Amacımız; yabancı ve yerli kaynaklardan gelen
-            gelişmeleri Türkçe, kaynaklı ve özgün bir editoryal dilde
-            okuyucuya ulaştırmaktır.
+            {settings.site_name}, yapay zekâ ve teknoloji haberlerine odaklanan
+            Türkçe bir dijital yayındır. Amacımız; seçilmiş kaynaklardan gelen
+            gelişmeleri kaynaklı, anlaşılır ve özgün bir dille okuyucuya
+            ulaştırmaktır.
           </p>
         </header>
 
         <section className="prose-bytok space-y-4">
           <h2>Ne yapıyoruz?</h2>
           <p>
-            BYTOK AI bir haber ajansı değildir; seçilmiş kaynakları izleyen,
-            içeriği Türkçeye ve kendi editoryal sesine dönüştüren otomatik
-            destekli bir yayın sistemidir. Her haberde kaynak gösterilir;
-            metin doğrudan çeviri yerine yeniden yazılır.
+            BYTOK AI; yapay zekâ, geliştirici ekosistemi, iş dünyası, araştırma
+            ve eleştirel yorum alanlarında haber yayımlar. Her haberde dayanak
+            alınan kaynak gösterilir; metinler Türkçe ve özgün bir anlatımla
+            sunulur.
           </p>
           <p>
-            Yayın çizgimiz teknoloji, iş dünyası, araştırma ve eleştirel
-            yorumu kapsar. Okuyucuya hem hız hem de bağlam sunmayı hedefleriz.
+            Okuyucuya hem güncel gelişmeleri hem de bağlamı birlikte sunmayı
+            hedefleriz.
           </p>
         </section>
 
         <section className="space-y-6">
           <div className="space-y-3">
             <h2 className="font-serif text-2xl font-semibold tracking-tight">
-              Beş editoryal persona
+              Yazarlar
             </h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              İçerikler, konuya göre seçilen editoryal kimliklerle üretilir.
-              Bu personelar gerçek kişiler değildir; BYTOK AI’ın yazım tonunu
-              ve uzmanlık odağını yöneten kurgusal editoryal kimliklerdir.
+              Yayınımızda farklı uzmanlık alanlarına sahip yazarlar yer alır.
+              Her yazar kendi üslubu ve odağıyla yazar.
             </p>
           </div>
 
           <ul className="space-y-4">
-            {PERSONA_ROLES.map((item) => {
+            {AUTHOR_FOCUS.map((item) => {
               const matched = authors.find((a) => a.role === item.role);
               return (
                 <li
                   key={item.role}
                   className="rounded-xl border border-border bg-card/50 p-5"
                 >
-                  <p className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    {item.role}
-                  </p>
                   {matched ? (
-                    <h3 className="mt-2 font-serif text-xl font-semibold tracking-tight">
-                      <Link
-                        href={`/yazar/${matched.slug}`}
-                        className="transition-colors hover:text-primary"
-                      >
-                        {matched.name}
-                      </Link>
-                    </h3>
+                    <div className="flex gap-4">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={authorAvatarUrl(matched)}
+                        alt=""
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 shrink-0 rounded-full bg-muted"
+                      />
+                      <div className="min-w-0">
+                        <h3 className="font-serif text-xl font-semibold tracking-tight">
+                          <Link
+                            href={`/yazar/${matched.slug}`}
+                            className="transition-colors hover:text-primary"
+                          >
+                            {matched.name}
+                          </Link>
+                        </h3>
+                        <p className="mt-0.5 text-sm font-medium text-primary">
+                          {matched.role}
+                        </p>
+                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                          {matched.short_bio?.trim() || item.focus}
+                        </p>
+                      </div>
+                    </div>
                   ) : (
-                    <h3 className="mt-2 font-serif text-xl font-semibold tracking-tight">
-                      Editoryal kimlik
-                    </h3>
+                    <div>
+                      <p className="text-sm font-medium text-primary">
+                        {item.role}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {item.focus}
+                      </p>
+                    </div>
                   )}
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {matched?.short_bio?.trim() || item.focus}
-                  </p>
                 </li>
               );
             })}
           </ul>
-
-          <p className="rounded-xl border border-primary/20 bg-accent/40 p-5 text-sm leading-relaxed text-muted-foreground">
-            Personaların adları, unvanları ve biyografileri editoryal sistemin
-            parçasıdır. Gerçek gazeteci veya yazar kimliği iddiası taşımazlar.
-          </p>
         </section>
 
         <section className="prose-bytok space-y-4">
           <h2>Şeffaflık</h2>
           <p>
-            Yapay zekâ destekli üretim, kaynak atıfı, düzeltme ve telif
+            Kaynak gösterme, özgünleştirme, doğruluk ve düzeltme
             yaklaşımımız için{" "}
             <Link href="/editoryal-politika">editoryal politikamıza</Link>{" "}
             bakabilirsiniz. Takip ettiğimiz kaynaklar{" "}

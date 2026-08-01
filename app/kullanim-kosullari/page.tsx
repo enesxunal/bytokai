@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const title = "Kullanım koşulları";
   const description =
-    "BYTOK AI kullanım koşulları: sitenin kullanımı, içerik hakları, sorumluluk sınırları ve yapay zekâ destekli yayın hakkında bilgilendirme.";
+    "BYTOK AI kullanım koşulları: sitenin kullanımı, içerik hakları ve sorumluluk sınırları.";
   const canonical = absoluteUrl(settings.site_url, "/kullanim-kosullari");
 
   return {
@@ -71,8 +71,7 @@ export default async function TermsPage() {
             <p>
               BYTOK AI; yapay zekâ ve teknoloji odaklı haber, analiz ve
               editoryal içerik yayımlayan dijital bir yayındır. İçerikler
-              kaynaklı ve yapay zekâ destekli editoryal süreçlerle
-              hazırlanabilir.
+              kaynaklı ve özgün bir editoryal süreçle hazırlanır.
             </p>
             <p>
               Site bilgilendirme amaçlıdır. Yatırım, hukuki veya teknik

@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const title = "Editoryal politika";
   const description =
-    "BYTOK AI’ın kaynak gösterme, yapay zekâ destekli üretim, özgünleştirme, doğruluk, düzeltme ve telif politikası.";
+    "BYTOK AI’ın kaynak gösterme, özgünleştirme, doğruluk, düzeltme ve telif politikası.";
   const canonical = absoluteUrl(settings.site_url, "/editoryal-politika");
 
   return {
@@ -35,15 +35,7 @@ const SECTIONS = [
     title: "Kaynak gösterme",
     body: [
       "Her haberde dayanak alınan kaynağın adı ve mümkün olduğunda orijinal bağlantısı gösterilir. Okuyucu, temel olay veya duyurunun nereden geldiğini haberde görebilir.",
-      "Kaynak listemiz Kamuya açık olarak Kaynaklar sayfasında yer alır. Takip edilen bölüm bağlantıları da bu sayfada paylaşılır.",
-    ],
-  },
-  {
-    id: "yapay-zeka",
-    title: "Yapay zekâ destekli üretim",
-    body: [
-      "BYTOK AI içerikleri, editoryal kurallar ve persona sistemleriyle yönetilen yapay zekâ destekli bir üretim hattıyla hazırlanır. Bu, haberin insan editoryal çerçevesi olmadan rastgele üretildiği anlamına gelmez; üretim süreci tanımlı kalite ve risk kontrollerine bağlıdır.",
-      "Yayınlanan içeriklerde yapay zekâ destekli üretim açıkça belirtilir. Bu açıklama, okuyucunun içeriğin nasıl hazırlandığını bilmesi içindir.",
+      "Kaynak listemiz kamuya açık olarak Kaynaklar sayfasında yer alır. Takip edilen bölüm bağlantıları da bu sayfada paylaşılır.",
     ],
   },
   {
@@ -58,8 +50,8 @@ const SECTIONS = [
     id: "dogruluk",
     title: "Doğruluk kontrolü",
     body: [
-      "Üretim hattı; kaynak gerçeklerine bağlılık, abartılı iddia, uydurma detay ve düşük güven sinyallerini kontrol etmeye çalışır. Kaynakta olmayan sayı, tarih, alıntı veya teknik iddia üretilmemesi hedeflenir.",
-      "Kontroller otomatik ve kural tabanlıdır. Yine de hata olasılığı vardır; bu nedenle düzeltme politikamız aktiftir.",
+      "Yayın öncesi süreçte kaynak gerçeklerine bağlılık, abartılı iddia, uydurma detay ve düşük güven sinyalleri kontrol edilir. Kaynakta olmayan sayı, tarih, alıntı veya teknik iddia üretilmemesi hedeflenir.",
+      "Kontrollere rağmen hata olasılığı vardır; bu nedenle düzeltme politikamız aktiftir.",
     ],
   },
   {
@@ -67,7 +59,7 @@ const SECTIONS = [
     title: "Düzeltme politikası",
     body: [
       "Yayın sonrası fark edilen olgusal hatalar, mümkün olan en kısa sürede düzeltilir. Anlamı değiştiren düzeltmelerde içerik güncellenir; gerekirse editoryal not eklenir.",
-      "Düzeltme talepleri için sitede yayımlanan iletişim kanallarını veya yönetici süreçlerini kullanabilirsiniz. Talepler incelenir; her talep otomatik kabul edilmez.",
+      "Düzeltme talepleri için sitede yayımlanan iletişim kanallarını kullanabilirsiniz. Talepler incelenir; her talep otomatik kabul edilmez.",
     ],
   },
   {
@@ -80,20 +72,11 @@ const SECTIONS = [
     ],
   },
   {
-    id: "dusuk-guven",
-    title: "Düşük güvenli içeriğin otomatik yayınlanmaması",
+    id: "yayin-esikleri",
+    title: "Yayın eşikleri",
     body: [
       "Güven skoru düşük, risk bayrağı yüksek veya kalite kontrolünden geçemeyen içerikler otomatik olarak yayınlanmaz. Bu tür içerikler taslak, inceleme veya reddedilmiş durumda tutulabilir.",
-      "Otomatik yayın, yalnızca tanımlı eşikleri geçen içerikler için geçerlidir. Belirsiz, çelişkili veya yüksek riskli konular insan incelemesine bırakılabilir.",
-    ],
-  },
-  {
-    id: "otomasyon",
-    title: "Otomasyonun kapsamı",
-    body: [
-      "Otomasyon; kaynak tarama, aday haber seçimi, sınıflandırma, persona atama, metin üretimi, kalite kontrolü ve zamanlanmış yayın adımlarını kapsayabilir.",
-      "Otomasyon şunları kapsamaz: kaynağın yerine geçmek, doğrulanmamış iddiayı kesin gerçek gibi sunmak, okuyucuyu yanıltacak şekilde insan yazar kimliği iddiası oluşturmak.",
-      "Sistem ayarları, eşikler ve kaynak listesi zaman içinde güncellenebilir. Güncel kaynaklar için Kaynaklar sayfasına bakın.",
+      "Belirsiz, çelişkili veya yüksek riskli konular ek incelemeye bırakılabilir.",
     ],
   },
 ] as const;
@@ -125,43 +108,27 @@ export default async function EditorialPolicyPage() {
           </h1>
           <p className="text-lg leading-relaxed text-muted-foreground text-pretty">
             Bu sayfa, BYTOK AI’ın haber üretimi ve yayınında izlediği genel
-            ilkeleri açıklar. Metin kesin hukuki danışmanlık değildir; okuyucu
-            ve kaynak sahipleri için şeffaflık amacıyla yazılmıştır.
+            kaynak, doğruluk ve telif ilkelerini özetler.
           </p>
         </header>
 
         <div className="space-y-10">
           {SECTIONS.map((section) => (
-            <section key={section.id} id={section.id} className="scroll-mt-24">
+            <section key={section.id} id={section.id} className="scroll-mt-24 space-y-3">
               <h2 className="font-serif text-2xl font-semibold tracking-tight">
                 {section.title}
               </h2>
-              <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                {section.body.map((paragraph) => (
-                  <p key={paragraph.slice(0, 48)}>{paragraph}</p>
-                ))}
-              </div>
+              {section.body.map((paragraph) => (
+                <p
+                  key={paragraph.slice(0, 48)}
+                  className="text-sm leading-relaxed text-muted-foreground sm:text-base"
+                >
+                  {paragraph}
+                </p>
+              ))}
             </section>
           ))}
         </div>
-
-        <p className="rounded-xl border border-border bg-card/50 p-5 text-sm leading-relaxed text-muted-foreground">
-          İlgili sayfalar:{" "}
-          <Link href="/hakkimizda" className="text-primary hover:opacity-80">
-            Hakkımızda
-          </Link>
-          {" · "}
-          <Link href="/kaynaklar" className="text-primary hover:opacity-80">
-            Kaynaklar
-          </Link>
-          {" · "}
-          <Link
-            href="/kullanim-kosullari"
-            className="text-primary hover:opacity-80"
-          >
-            Kullanım koşulları
-          </Link>
-        </p>
       </Container>
     </main>
   );

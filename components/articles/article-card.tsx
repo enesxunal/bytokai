@@ -71,6 +71,7 @@ function MetaRow({ article }: { article: DbArticleWithRelations }) {
           {article.category.name}
         </Badge>
       ) : null}
+      {article.author ? <span>{article.author.name}</span> : null}
       {date ? (
         <time dateTime={article.published_at ?? undefined}>{date}</time>
       ) : null}

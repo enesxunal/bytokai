@@ -11,10 +11,13 @@ type LogoProps = {
   wordmark?: boolean;
 };
 
+/** Intrinsic logo aspect: 1600×420 */
+const LOGO_ASPECT = 1600 / 420;
+
 const imageHeights = {
-  sm: 32,
-  md: 44,
-  lg: 52,
+  sm: 30,
+  md: 36,
+  lg: 40,
 } as const;
 
 const textSizes = {
@@ -23,10 +26,11 @@ const textSizes = {
   lg: "text-3xl",
 } as const;
 
+/** CSS heights: mobile ~30–34px, desktop ~34–40px */
 const imageClass = {
-  sm: "h-8 w-auto",
-  md: "h-10 w-auto sm:h-11",
-  lg: "h-12 w-auto",
+  sm: "h-[30px] w-auto",
+  md: "h-[32px] w-auto sm:h-[36px] lg:h-[38px]",
+  lg: "h-[36px] w-auto sm:h-[40px]",
 } as const;
 
 export function Logo({
@@ -36,7 +40,7 @@ export function Logo({
   wordmark = true,
 }: LogoProps) {
   const height = imageHeights[size];
-  const width = Math.round(height * (1600 / 420));
+  const width = Math.round(height * LOGO_ASPECT);
 
   const content = wordmark ? (
     <Image
@@ -44,8 +48,9 @@ export function Logo({
       alt="BYTOK AI"
       width={width}
       height={height}
-      className={cn(imageClass[size], className)}
+      className={cn(imageClass[size], "object-contain object-left", className)}
       priority
+      sizes="(max-width: 640px) 122px, 145px"
     />
   ) : (
     <span
@@ -55,7 +60,7 @@ export function Logo({
         className,
       )}
     >
-      BYTOK <span className="text-gradient-brand">AI</span>
+      BYTOK <span className="text-primary">AI</span>
     </span>
   );
 
@@ -66,7 +71,7 @@ export function Logo({
   return (
     <Link
       href={href}
-      className="inline-flex items-center transition-opacity hover:opacity-90"
+      className="inline-flex shrink-0 items-center"
       aria-label="BYTOK AI ana sayfa"
     >
       {content}

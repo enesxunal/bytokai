@@ -52,7 +52,7 @@ export async function generateMetadata({
     page > 1 ? `${author.name} · Sayfa ${page}` : author.name;
   const description =
     author.short_bio?.trim() ||
-    `${author.name} — BYTOK AI editoryal personası.`;
+    `${author.name}, BYTOK AI yazarı.`;
   const canonical = listingCanonical(
     settings.site_url,
     `/yazar/${author.slug}`,
@@ -161,7 +161,10 @@ export default async function AuthorPage({
                 </div>
                 {author.short_bio ? (
                   <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-                    {author.short_bio}
+                    {author.short_bio
+                      .replace(/\beditoryal personası\b/gi, "yazar")
+                      .replace(/\bpersonası\b/gi, "yazar")
+                      .replace(/\bpersona\b/gi, "yazar")}
                   </p>
                 ) : null}
                 {author.expertise.length > 0 ? (
@@ -178,21 +181,15 @@ export default async function AuthorPage({
 
             {author.full_bio ? (
               <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                {author.full_bio}
+                {author.full_bio
+                  .replace(/\beditoryal personası\b/gi, "yazar")
+                  .replace(/\bpersonası\b/gi, "yazar")
+                  .replace(/\bpersona\b/gi, "yazar")
+                  .replace(/\bkurgusal bir editoryal ses[^.]*\./gi, "")
+                  .replace(/\s{2,}/g, " ")
+                  .trim()}
               </p>
             ) : null}
-
-            <aside className="rounded-xl border border-primary/20 bg-accent/40 p-4 text-sm leading-relaxed text-muted-foreground">
-              <p>
-                <span className="font-medium text-foreground">
-                  Editoryal persona:
-                </span>{" "}
-                {author.name}, BYTOK AI tarafından oluşturulan kurgusal bir
-                editoryal sesdir. Gerçek bir kişi değildir; içerikler yapay
-                zekâ destekli yayın sistemiyle bu persona üzerinden
-                hazırlanır.
-              </p>
-            </aside>
 
             <p className="text-sm text-muted-foreground">
               {articles.total} haber
@@ -204,7 +201,7 @@ export default async function AuthorPage({
             <EmptyState
               icon={Newspaper}
               title="Bu yazara ait haber yok"
-              description="Yayınlandığında bu persona altındaki içerikler burada listelenir."
+              description="Yayınlandığında bu yazara ait içerikler burada listelenir."
             />
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

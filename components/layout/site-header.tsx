@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 
-import { MobileNav, type NavItem } from "@/components/layout/mobile-nav";
+import {
+  DesktopCategoryNav,
+  MobileNav,
+  type NavItem,
+} from "@/components/layout/mobile-nav";
 import { Container } from "@/components/shared/container";
 import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -25,9 +29,12 @@ const PRIMARY_SLUGS = new Set([
   "yorum",
 ]);
 
-const CORPORATE_NAV: NavItem[] = [
+export const CORPORATE_NAV: NavItem[] = [
   { label: "Hakkımızda", href: "/hakkimizda" },
   { label: "Kaynaklar", href: "/kaynaklar" },
+  { label: "Editoryal politika", href: "/editoryal-politika" },
+  { label: "Gizlilik", href: "/gizlilik" },
+  { label: "Kullanım koşulları", href: "/kullanim-kosullari" },
 ];
 
 type SiteHeaderProps = {
@@ -45,49 +52,26 @@ export function buildNavItems(categories: DbCategory[] = []): NavItem[] {
 
 export function SiteHeader({ categories = [] }: SiteHeaderProps) {
   const items = buildNavItems(categories);
-  const mobileItems = [...items, ...CORPORATE_NAV];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md">
-      <Container className="flex h-[72px] items-center justify-between gap-4 sm:h-[76px]">
-        <div className="flex min-w-0 flex-1 items-center gap-5 lg:gap-8">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur-[6px] supports-[backdrop-filter]:bg-background/85">
+      <Container className="grid h-[72px] grid-cols-[1fr_auto] items-center gap-2 sm:h-[76px] lg:grid-cols-[auto_1fr_auto] lg:gap-6">
+        <div className="min-w-0 justify-self-start">
           <Logo size="md" />
-          <nav
-            aria-label="Ana menü"
-            className="hidden items-center gap-0.5 lg:flex"
-          >
-            {items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-md px-2.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground xl:px-3"
-              >
-                {item.label}
-              </Link>
-            ))}
-            <span className="mx-1.5 h-4 w-px bg-border" aria-hidden />
-            {CORPORATE_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-md px-2.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground xl:px-3"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
         </div>
 
-        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+        <DesktopCategoryNav items={items} />
+
+        <div className="flex shrink-0 items-center justify-self-end gap-0.5">
           <Link
             href="/arama"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
             aria-label="Ara"
           >
             <Search className="h-5 w-5" aria-hidden />
           </Link>
           <ThemeToggle />
-          <MobileNav items={mobileItems} />
+          <MobileNav categoryItems={items} corporateItems={CORPORATE_NAV} />
         </div>
       </Container>
     </header>
