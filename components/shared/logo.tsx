@@ -12,15 +12,21 @@ type LogoProps = {
 };
 
 const imageHeights = {
-  sm: 28,
-  md: 36,
-  lg: 44,
+  sm: 32,
+  md: 44,
+  lg: 52,
 } as const;
 
 const textSizes = {
   sm: "text-lg",
   md: "text-2xl",
   lg: "text-3xl",
+} as const;
+
+const imageClass = {
+  sm: "h-8 w-auto",
+  md: "h-10 w-auto sm:h-11",
+  lg: "h-12 w-auto",
 } as const;
 
 export function Logo({
@@ -38,7 +44,7 @@ export function Logo({
       alt="BYTOK AI"
       width={width}
       height={height}
-      className={cn("h-7 w-auto sm:h-9", className)}
+      className={cn(imageClass[size], className)}
       priority
     />
   ) : (

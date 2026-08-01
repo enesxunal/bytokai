@@ -1,6 +1,9 @@
 import "server-only";
 
-import { getSafeClient } from "@/lib/database/safe-client";
+import {
+  getPublicAnonClient,
+  getSafeClient,
+} from "@/lib/database/safe-client";
 import {
   ARTICLE_SELECT,
   emptyPage,
@@ -37,7 +40,7 @@ export async function getFeaturedArticles(
   limit = 5,
 ): Promise<DbArticleWithRelations[]> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase
@@ -60,7 +63,7 @@ export async function getLatestArticles(
   offset = 0,
 ): Promise<DbArticleWithRelations[]> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase

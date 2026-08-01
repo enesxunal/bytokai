@@ -21,7 +21,7 @@
   --secondary: #e4ebf5;
   --secondary-foreground: #132038;
   --muted: #e8edf4;
-  --muted-foreground: #5a6578;
+  --muted-foreground: #4a5568;
   --accent: #dff4fb;
   --accent-foreground: #0a4a5c;
 
@@ -84,7 +84,7 @@
   --secondary: #152038;
   --secondary-foreground: #e4ebf5;
   --muted: #121a2c;
-  --muted-foreground: #93a0b8;
+  --muted-foreground: #a8b4c8;
   --accent: #0d2a3a;
   --accent-foreground: #9ae6f5;
 
@@ -216,8 +216,8 @@
   .bg-mesh {
     background-color: var(--background);
     background-image:
-      radial-gradient(ellipse 80% 50% at 0% -10%, color-mix(in oklab, var(--primary) 18%, transparent), transparent),
-      radial-gradient(ellipse 60% 40% at 100% 0%, color-mix(in oklab, var(--gradient-to) 12%, transparent), transparent);
+      radial-gradient(ellipse 70% 45% at 0% -8%, color-mix(in oklab, var(--primary) 12%, transparent), transparent),
+      radial-gradient(ellipse 50% 35% at 100% 0%, color-mix(in oklab, var(--primary) 6%, transparent), transparent);
   }
 }
 

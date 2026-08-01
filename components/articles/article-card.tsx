@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils/cn";
 function formatDate(value: string | null): string | null {
   if (!value) return null;
   try {
-    return formatIstanbul(value, "d MMMM yyyy");
+    return formatIstanbul(value, "d MMM yyyy");
   } catch {
     return null;
   }
@@ -34,7 +34,7 @@ function CoverPlaceholder({
       )}
       aria-hidden
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(255_255_255/0.12),transparent_45%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(255_255_255/0.1),transparent_45%)]" />
       <div className="relative h-1 w-16 rounded-full bg-white/70" />
     </div>
   );
@@ -65,18 +65,14 @@ function ArticleCover({
 function MetaRow({ article }: { article: DbArticleWithRelations }) {
   const date = formatDate(article.published_at);
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground/65">
       {article.category ? (
         <Badge variant="secondary" className="font-medium">
           {article.category.name}
         </Badge>
       ) : null}
-      {article.author ? <span>{article.author.name}</span> : null}
       {date ? (
-        <>
-          <span aria-hidden>·</span>
-          <time dateTime={article.published_at ?? undefined}>{date}</time>
-        </>
+        <time dateTime={article.published_at ?? undefined}>{date}</time>
       ) : null}
       {article.reading_time_minutes > 0 ? (
         <>
@@ -97,19 +93,21 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
   return (
     <article
       className={cn(
-        "group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm",
+        "group flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card",
         className,
       )}
     >
       <Link
         href={`/haber/${article.slug}`}
         className="relative aspect-[16/10] overflow-hidden"
+        tabIndex={-1}
+        aria-hidden
       >
         <ArticleCover article={article} />
       </Link>
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-1 flex-col gap-2.5 p-4 sm:p-5">
         <MetaRow article={article} />
-        <h3 className="font-serif text-xl font-semibold leading-snug tracking-tight">
+        <h3 className="font-serif text-lg font-semibold leading-snug tracking-tight line-clamp-2 sm:text-xl">
           <Link
             href={`/haber/${article.slug}`}
             className="transition-colors hover:text-primary"
@@ -118,7 +116,7 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
           </Link>
         </h3>
         {article.excerpt ? (
-          <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+          <p className="line-clamp-2 text-sm leading-relaxed text-foreground/70">
             {article.excerpt}
           </p>
         ) : null}

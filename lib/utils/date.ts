@@ -104,17 +104,23 @@ export function formatIstanbul(
   const parts = getIstanbulParts(input);
   const pad = (n: number) => String(n).padStart(2, "0");
   const month = ISTANBUL_MONTHS_SHORT[parts.month - 1];
+  const includeDate = /Y{2,4}|M{1,4}|D{1,2}|d{1,2}/i.test(pattern);
   const includeTime = /H{1,2}|m{1,2}|s{1,2}/i.test(pattern);
   const includeSeconds = /s{1,2}/i.test(pattern);
 
-  const datePart = `${pad(parts.day)} ${month} ${parts.year}`;
-  if (!includeTime) return datePart;
+  const segments: string[] = [];
+  if (includeDate || !includeTime) {
+    segments.push(`${pad(parts.day)} ${month} ${parts.year}`);
+  }
+  if (includeTime) {
+    segments.push(
+      includeSeconds
+        ? `${pad(parts.hour)}:${pad(parts.minute)}:${pad(parts.second)}`
+        : `${pad(parts.hour)}:${pad(parts.minute)}`,
+    );
+  }
 
-  const timePart = includeSeconds
-    ? `${pad(parts.hour)}:${pad(parts.minute)}:${pad(parts.second)}`
-    : `${pad(parts.hour)}:${pad(parts.minute)}`;
-
-  return `${datePart} ${timePart}`;
+  return segments.join(" ");
 }
 
 export function parsePublishWindow(

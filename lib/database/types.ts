@@ -142,7 +142,7 @@ export interface PublicSiteSettings {
 export const DEFAULT_SITE_SETTINGS: PublicSiteSettings = {
   site_name: "BYTOK AI",
   site_description:
-    "Yapay zekâ odaklı Türkçe teknoloji haber platformu. Kaynaklı, özgün ve otomatik editoryal yayın.",
+    "Yapay zekâ, teknoloji ve dijital dünyanın öne çıkan gelişmeleri. Türkçe, kaynaklı ve bağlamı güçlü haberler.",
   site_url: "https://bytok.ai",
   site_tagline: "Yapay zekâ haberleri, kaynaklı ve özgün",
   ai_disclosure_text:

@@ -58,7 +58,7 @@ function RelatedCard({ article }: { article: DbArticleWithRelations }) {
             src={article.cover_image_url}
             alt=""
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, 25vw"
           />
         ) : (
@@ -232,29 +232,29 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
           </aside>
         )}
 
-        <aside className="mt-6 rounded-xl border border-primary/20 bg-accent/40 p-5 text-sm leading-relaxed text-muted-foreground">
-          <h2 className="mb-2 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-foreground">
+        <aside className="mt-8 border-t border-border/70 pt-5 text-sm leading-relaxed text-foreground/70">
+          <h2 className="mb-1.5 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground/55">
             Editoryal not
           </h2>
-          <p>{settings.ai_disclosure_text}</p>
+          <p className="max-w-2xl">{settings.ai_disclosure_text}</p>
         </aside>
 
         {author ? (
-          <aside className="mt-10 rounded-2xl border border-border bg-card p-5 sm:p-6">
-            <div className="flex gap-4">
+          <aside className="mt-8 rounded-xl border border-border/70 bg-card p-4 sm:p-5">
+            <div className="flex gap-3.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={authorAvatarUrl(author)}
                 alt=""
-                width={64}
-                height={64}
-                className="h-14 w-14 shrink-0 rounded-full bg-muted sm:h-16 sm:w-16"
+                width={48}
+                height={48}
+                className="h-12 w-12 shrink-0 rounded-full bg-muted"
               />
               <div className="min-w-0">
-                <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  Yazar
+                <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-foreground/55">
+                  BYTOK AI editoryal personası
                 </p>
-                <h2 className="mt-1 font-serif text-xl font-semibold tracking-tight">
+                <h2 className="mt-1 font-serif text-lg font-semibold tracking-tight">
                   <Link
                     href={`/yazar/${author.slug}`}
                     className="transition-colors hover:text-primary"
@@ -263,7 +263,7 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
                   </Link>
                 </h2>
                 <p className="text-sm font-medium text-primary">{author.role}</p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                <p className="mt-1.5 text-sm leading-relaxed text-foreground/70">
                   {author.short_bio}
                 </p>
               </div>

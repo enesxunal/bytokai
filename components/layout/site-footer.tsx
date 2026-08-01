@@ -25,14 +25,11 @@ export function SiteFooter({ settings, categories = [] }: SiteFooterProps) {
 
   return (
     <footer className="mt-auto border-t border-border bg-card/40">
-      <Container className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="space-y-4 lg:col-span-1">
+      <Container className="grid gap-8 py-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6 lg:py-9">
+        <div className="space-y-3 lg:col-span-1">
           <Logo size="sm" />
-          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-            {settings.site_tagline}. {settings.site_description}
-          </p>
-          <p className="max-w-md text-xs leading-relaxed text-muted-foreground/90">
-            {settings.ai_disclosure_text}
+          <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+            {settings.site_tagline}
           </p>
         </div>
 
@@ -40,7 +37,7 @@ export function SiteFooter({ settings, categories = [] }: SiteFooterProps) {
           <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Kategoriler
           </h2>
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-3 space-y-1.5">
             {navItems.map((item) => (
               <li key={item.href}>
                 <Link
@@ -58,7 +55,7 @@ export function SiteFooter({ settings, categories = [] }: SiteFooterProps) {
           <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Kurumsal
           </h2>
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-3 space-y-1.5">
             {CORPORATE_LINKS.map((item) => (
               <li key={item.href}>
                 <Link
@@ -76,7 +73,7 @@ export function SiteFooter({ settings, categories = [] }: SiteFooterProps) {
           <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Bağlantılar
           </h2>
-          <ul className="mt-4 space-y-2 text-sm">
+          <ul className="mt-3 space-y-1.5 text-sm">
             {social.x || social.twitter ? (
               <li>
                 <a
@@ -101,20 +98,12 @@ export function SiteFooter({ settings, categories = [] }: SiteFooterProps) {
                 </a>
               </li>
             ) : null}
-            <li>
-              <a
-                href={social.rss ?? "/rss.xml"}
-                className="transition-colors hover:text-primary"
-              >
-                RSS
-              </a>
-            </li>
           </ul>
         </div>
       </Container>
 
       <div className="border-t border-border">
-        <Container className="flex flex-col gap-2 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <Container className="flex flex-col gap-1.5 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {settings.site_name}. Tüm hakları saklıdır.
           </p>
