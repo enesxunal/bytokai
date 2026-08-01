@@ -1,8 +1,24 @@
-import { format, isValid, parseISO } from "date-fns";
-import { tr } from "date-fns/locale";
+import { isValid, parseISO } from "date-fns";
 import type { PublishWindow } from "@/types";
 
 export const ISTANBUL_TIMEZONE = "Europe/Istanbul";
+export const ISTANBUL_LOCALE = "tr-TR";
+
+/** Fixed Turkish short months — avoids Node/browser Intl ICU mismatches. */
+const ISTANBUL_MONTHS_SHORT = [
+  "Oca",
+  "Şub",
+  "Mar",
+  "Nis",
+  "May",
+  "Haz",
+  "Tem",
+  "Ağu",
+  "Eyl",
+  "Eki",
+  "Kas",
+  "Ara",
+] as const;
 
 export interface IstanbulParts {
   year: number;
@@ -67,12 +83,38 @@ export function toIstanbul(date: Date | string | number): Date {
   );
 }
 
+/**
+ * Formats a timestamp in Europe/Istanbul with fixed tr-TR labels.
+ * Assembles from numeric Istanbul parts — never Intl month names —
+ * so Node and browsers produce identical SSR/client strings.
+ */
 export function formatIstanbul(
   date: Date | string | number,
   pattern = "dd MMM yyyy HH:mm",
 ): string {
-  const istanbul = toIstanbul(date);
-  return format(istanbul, pattern, { locale: tr });
+  const input =
+    typeof date === "string" || typeof date === "number"
+      ? new Date(date)
+      : date;
+
+  if (!isValid(input)) {
+    throw new Error("Geçersiz tarih");
+  }
+
+  const parts = getIstanbulParts(input);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const month = ISTANBUL_MONTHS_SHORT[parts.month - 1];
+  const includeTime = /H{1,2}|m{1,2}|s{1,2}/i.test(pattern);
+  const includeSeconds = /s{1,2}/i.test(pattern);
+
+  const datePart = `${pad(parts.day)} ${month} ${parts.year}`;
+  if (!includeTime) return datePart;
+
+  const timePart = includeSeconds
+    ? `${pad(parts.hour)}:${pad(parts.minute)}:${pad(parts.second)}`
+    : `${pad(parts.hour)}:${pad(parts.minute)}`;
+
+  return `${datePart} ${timePart}`;
 }
 
 export function parsePublishWindow(
