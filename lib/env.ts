@@ -9,7 +9,7 @@ const clientSchema = z.object({
 const serverSchema = clientSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   GEMINI_API_KEY: z.string().min(1),
-  GEMINI_MODEL: z.string().min(1).default("gemini-2.0-flash"),
+  GEMINI_MODEL: z.string().min(1).default("gemini-3.1-flash-lite"),
   CRON_SECRET: z.string().min(1),
   APP_TIMEZONE: z.string().min(1).default("Europe/Istanbul"),
 });

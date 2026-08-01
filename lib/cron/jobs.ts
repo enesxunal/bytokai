@@ -3,6 +3,7 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { getGeminiModel } from "@/lib/ai/client";
 import { classifyArticle } from "@/lib/ai/classify-article";
 import { generateArticle } from "@/lib/ai/generate-article";
 import { qualityCheck } from "@/lib/ai/quality-check";
@@ -682,7 +683,7 @@ async function processOneRaw(
 
     await ctx.supabase.from("ai_generations").insert({
       raw_article_id: raw.id,
-      model: process.env.GEMINI_MODEL?.trim() || "unknown",
+      model: getGeminiModel(),
       prompt_version: "v1",
       status: "failed",
       error_message: message.slice(0, 400),
