@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BYTOK AI
+
+AI destekli Türkçe teknoloji haber platformu.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## İlk admin hesabı
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Admin paneli (`/admin`) yalnızca Supabase Auth + `profiles.role = 'admin'` ile açılır. İlk hesap uygulama içinden oluşturulmaz; Supabase Dashboard üzerinden elle hazırlanır.
 
-## Learn More
+1. [Supabase Dashboard](https://supabase.com/dashboard) → **Authentication** → **Users** → **Add user**.
+2. E-posta ve güçlü bir şifre girin; kullanıcıyı oluşturun.
+3. Oluşan kullanıcının **User UID** değerini kopyalayın.
+4. **SQL Editor** içinde profil satırını ekleyin (RLS nedeniyle ilk admin yalnızca SQL / service role ile yazılır):
 
-To learn more about Next.js, take a look at the following resources:
+```sql
+INSERT INTO public.profiles (id, email, full_name, role)
+VALUES (
+  'USER_UID_BURAYA',
+  'admin@ornek.com',
+  'Site Admin',
+  'admin'
+);
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Supabase **Authentication → URL Configuration** içinde Site URL ve Redirect URLs listesine `NEXT_PUBLIC_SITE_URL` değerinizi ve `https://SITENIZ/admin/login?reset=1` adresini ekleyin.
+6. `/admin/login` sayfasından e-posta / şifre ile giriş yapın.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Şifre sıfırlama: `/admin/forgot-password` → e-posta bağlantısı → `/admin/login?reset=1` üzerinde yeni şifre.
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run typecheck` — TypeScript kontrolü
+- `npm run lint` — ESLint
+- `npm run build` — üretim derlemesi

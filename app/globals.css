@@ -1,26 +1,350 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* -------------------------------------------------------------------------- */
+/* BYTOK AI — Premium Turkish tech magazine theme                             */
+/* Light: broken-white · Dark: deep navy · Accent: electric blue → cyan       */
+/* -------------------------------------------------------------------------- */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --background: #f4f6f9;
+  --foreground: #0b1220;
+  --card: #fbfcfe;
+  --card-foreground: #0b1220;
+  --popover: #fbfcfe;
+  --popover-foreground: #0b1220;
+
+  /* Brand / accent — electric blue & cyan */
+  --primary: #1565ef;
+  --primary-foreground: #f5f9ff;
+  --secondary: #e4ebf5;
+  --secondary-foreground: #132038;
+  --muted: #e8edf4;
+  --muted-foreground: #5a6578;
+  --accent: #dff4fb;
+  --accent-foreground: #0a4a5c;
+
+  /* Feedback */
+  --success: #0f7a4a;
+  --success-foreground: #ecfdf5;
+  --warning: #b45309;
+  --warning-foreground: #fffbeb;
+  --destructive: #c81e1e;
+  --destructive-foreground: #fef2f2;
+
+  /* Chrome */
+  --border: #d5dde8;
+  --input: #d5dde8;
+  --ring: #1d7ef0;
+
+  /* Gradient tokens */
+  --gradient-from: #0b4fd9;
+  --gradient-via: #1a8cff;
+  --gradient-to: #22d3ee;
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--gradient-from) 0%,
+    var(--gradient-via) 48%,
+    var(--gradient-to) 100%
+  );
+
+  /* Category cover accents */
+  --cover-yapay-zeka: linear-gradient(135deg, #0b1f4a 0%, #1565ef 50%, #22d3ee 100%);
+  --cover-yazilim: linear-gradient(135deg, #07111f 0%, #1e3a8a 50%, #38bdf8 100%);
+  --cover-girisim: linear-gradient(135deg, #0c1a2e 0%, #0e7490 55%, #22d3ee 100%);
+  --cover-donanim: linear-gradient(135deg, #0f172a 0%, #0369a1 50%, #67e8f9 100%);
+  --cover-politika: linear-gradient(135deg, #0b1220 0%, #1d4ed8 50%, #60a5fa 100%);
+  --cover-default: linear-gradient(135deg, #07111f 0%, #1565ef 50%, #22d3ee 100%);
+
+  /* Radius & elevation */
+  --radius: 0.625rem;
+  --shadow-sm: 0 1px 2px rgb(11 18 32 / 0.05);
+  --shadow-md: 0 8px 24px rgb(11 18 32 / 0.08);
+  --shadow-lg: 0 18px 48px rgb(11 18 32 / 0.12);
+
+  /* Charts (optional) */
+  --chart-1: #1565ef;
+  --chart-2: #22d3ee;
+  --chart-3: #0f7a4a;
+  --chart-4: #b45309;
+  --chart-5: #64748b;
+}
+
+.dark {
+  --background: #070b14;
+  --foreground: #e8eef8;
+  --card: #0d1424;
+  --card-foreground: #e8eef8;
+  --popover: #101a2e;
+  --popover-foreground: #e8eef8;
+
+  --primary: #4da3ff;
+  --primary-foreground: #04101f;
+  --secondary: #152038;
+  --secondary-foreground: #e4ebf5;
+  --muted: #121a2c;
+  --muted-foreground: #93a0b8;
+  --accent: #0d2a3a;
+  --accent-foreground: #9ae6f5;
+
+  --success: #34d399;
+  --success-foreground: #052e1c;
+  --warning: #fbbf24;
+  --warning-foreground: #3b2405;
+  --destructive: #f87171;
+  --destructive-foreground: #3f0a0a;
+
+  --border: #1c2a44;
+  --input: #1c2a44;
+  --ring: #4da3ff;
+
+  --gradient-from: #1d4ed8;
+  --gradient-via: #3b82f6;
+  --gradient-to: #22d3ee;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-md: 0 10px 28px rgb(0 0 0 / 0.45);
+  --shadow-lg: 0 22px 56px rgb(0 0 0 / 0.55);
+
+  --chart-1: #4da3ff;
+  --chart-2: #22d3ee;
+  --chart-3: #34d399;
+  --chart-4: #fbbf24;
+  --chart-5: #94a3b8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-ibm-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01" on, "kern" on;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 35%, transparent);
+    color: var(--foreground);
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-serif tracking-tight text-balance;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .text-gradient-brand {
+    background-image: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-gradient-brand {
+    background-image: var(--gradient-brand);
+  }
+
+  .surface-card {
+    @apply bg-card text-card-foreground border border-border shadow-sm;
+  }
+
+  .bg-cover-default {
+    background-image: var(--cover-default);
+  }
+
+  .bg-cover-yapay-zeka {
+    background-image: var(--cover-yapay-zeka);
+  }
+
+  .bg-mesh {
+    background-color: var(--background);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 0% -10%, color-mix(in oklab, var(--primary) 18%, transparent), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, color-mix(in oklab, var(--gradient-to) 12%, transparent), transparent);
+  }
+}
+
+/* Prose — article / magazine body */
+.prose-bytok {
+  @apply prose prose-neutral dark:prose-invert max-w-none;
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-lead: var(--muted-foreground);
+  --tw-prose-links: var(--primary);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--primary);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-pre-bg: var(--muted);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}
+
+.prose-bytok :where(h1, h2, h3, h4) {
+  font-family: var(--font-serif);
+  letter-spacing: -0.02em;
+}
+
+.prose-bytok :where(a) {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.prose-bytok :where(blockquote) {
+  font-style: normal;
+  border-left-width: 3px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Admin shell — denser ops UI, same brand tokens                             */
+/* -------------------------------------------------------------------------- */
+
+.admin-shell {
+  --admin-bg: #0a1220;
+  --admin-fg: #e8eef8;
+  --admin-muted: #8b9bb3;
+  --admin-border: #1c2a44;
+  background:
+    radial-gradient(
+      ellipse 70% 40% at 100% -10%,
+      color-mix(in oklab, var(--primary) 10%, transparent),
+      transparent
+    ),
+    var(--background);
+}
+
+.admin-sidebar {
+  background: var(--admin-bg);
+  color: var(--admin-fg);
+}
+
+.admin-sidebar .text-admin-fg {
+  color: var(--admin-fg);
+}
+
+.admin-sidebar .text-admin-muted {
+  color: var(--admin-muted);
+}
+
+.admin-sidebar .border-admin-border {
+  border-color: var(--admin-border);
+}
+
+.admin-header {
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-main h1,
+.admin-main h2,
+.admin-main h3 {
+  font-family: var(--font-sans);
+}
+
+.dark .admin-shell {
+  --admin-bg: #05080f;
+  --admin-border: #152038;
+}
+
+/* Skeleton shimmer */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.animate-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    color-mix(in oklab, var(--muted) 55%, var(--background)) 45%,
+    var(--muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-skeleton {
+    animation: none;
+    background: var(--muted);
+  }
 }

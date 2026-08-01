@@ -1,0 +1,298 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+
+import type { ArticlePageData } from "@/lib/articles/load-article-page";
+import { authorAvatarUrl } from "@/lib/database/authors";
+import type { DbArticleWithRelations } from "@/lib/database/types";
+import { Container } from "@/components/shared/container";
+import { ShareButtons } from "@/components/shared/share-buttons";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { formatIstanbul } from "@/lib/utils/date";
+import { cn } from "@/lib/utils/cn";
+
+function formatDate(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    return formatIstanbul(value, "d MMMM yyyy HH:mm");
+  } catch {
+    return null;
+  }
+}
+
+function CoverFallback({
+  categorySlug,
+  className,
+}: {
+  categorySlug?: string | null;
+  className?: string;
+}) {
+  const coverClass =
+    categorySlug === "yapay-zeka" ? "bg-cover-yapay-zeka" : "bg-cover-default";
+
+  return (
+    <div
+      className={cn(
+        "relative flex h-full w-full items-end overflow-hidden p-6",
+        coverClass,
+        className,
+      )}
+      aria-hidden
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(255_255_255/0.14),transparent_50%)]" />
+      <div className="relative h-1 w-20 rounded-full bg-white/75" />
+    </div>
+  );
+}
+
+function RelatedCard({ article }: { article: DbArticleWithRelations }) {
+  return (
+    <article className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <Link
+        href={`/haber/${article.slug}`}
+        className="relative aspect-[16/10] overflow-hidden"
+      >
+        {article.cover_image_url ? (
+          <Image
+            src={article.cover_image_url}
+            alt=""
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            sizes="(max-width: 768px) 100vw, 25vw"
+          />
+        ) : (
+          <CoverFallback categorySlug={article.category?.slug} />
+        )}
+      </Link>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        {article.category ? (
+          <Badge variant="secondary" className="w-fit">
+            {article.category.name}
+          </Badge>
+        ) : null}
+        <h3 className="font-serif text-base font-semibold leading-snug tracking-tight">
+          <Link
+            href={`/haber/${article.slug}`}
+            className="transition-colors hover:text-primary"
+          >
+            {article.title}
+          </Link>
+        </h3>
+      </div>
+    </article>
+  );
+}
+
+type ArticleDetailProps = {
+  data: ArticlePageData;
+};
+
+export function ArticleDetail({ data }: ArticleDetailProps) {
+  const { article, related, settings, bodyHtml, canonicalUrl } = data;
+  const publishedLabel = formatDate(article.published_at);
+  const author = article.author;
+
+  return (
+    <article>
+      <Container size="md" className="py-8 sm:py-12">
+        <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted-foreground">
+          <ol className="flex flex-wrap items-center gap-1.5">
+            <li>
+              <Link href="/" className="transition-colors hover:text-foreground">
+                Ana sayfa
+              </Link>
+            </li>
+            <li aria-hidden>/</li>
+            {article.category ? (
+              <>
+                <li>
+                  <Link
+                    href={`/kategori/${article.category.slug}`}
+                    className="transition-colors hover:text-foreground"
+                  >
+                    {article.category.name}
+                  </Link>
+                </li>
+                <li aria-hidden>/</li>
+              </>
+            ) : null}
+            <li className="truncate text-foreground/80" aria-current="page">
+              {article.title}
+            </li>
+          </ol>
+        </nav>
+
+        <header className="space-y-5">
+          {article.category ? (
+            <Link href={`/kategori/${article.category.slug}`}>
+              <Badge variant="secondary" className="font-medium">
+                {article.category.name}
+              </Badge>
+            </Link>
+          ) : null}
+
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-[2.75rem] lg:leading-tight">
+            {article.title}
+          </h1>
+
+          {article.excerpt ? (
+            <p className="text-lg leading-relaxed text-muted-foreground text-pretty">
+              {article.excerpt}
+            </p>
+          ) : null}
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+              {author ? (
+                <Link
+                  href={`/yazar/${author.slug}`}
+                  className="font-medium text-foreground transition-colors hover:text-primary"
+                >
+                  {author.name}
+                  <span className="font-normal text-muted-foreground">
+                    {" "}
+                    · {author.role}
+                  </span>
+                </Link>
+              ) : null}
+              {publishedLabel ? (
+                <time dateTime={article.published_at ?? undefined}>
+                  {publishedLabel}
+                </time>
+              ) : null}
+              {article.reading_time_minutes > 0 ? (
+                <span>{article.reading_time_minutes} dk okuma</span>
+              ) : null}
+            </div>
+            <ShareButtons url={canonicalUrl} title={article.title} />
+          </div>
+        </header>
+
+        <div className="relative mt-8 aspect-[21/9] overflow-hidden rounded-2xl border border-border bg-card sm:mt-10">
+          {article.cover_image_url ? (
+            <Image
+              src={article.cover_image_url}
+              alt=""
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 768px"
+            />
+          ) : (
+            <CoverFallback categorySlug={article.category?.slug} />
+          )}
+        </div>
+
+        {bodyHtml ? (
+          <div
+            className="prose-bytok mt-10"
+            dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          />
+        ) : null}
+
+        {article.tags.length > 0 ? (
+          <div className="mt-10 flex flex-wrap gap-2">
+            {article.tags.map((tag) => (
+              <Link key={tag.id} href={`/etiket/${tag.slug}`}>
+                <Badge
+                  variant="outline"
+                  className="transition-colors hover:border-primary/40 hover:text-primary"
+                >
+                  {tag.name}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        ) : null}
+
+        {(article.source_name || article.source_url) && (
+          <aside className="mt-10 rounded-xl border border-border bg-card/60 p-5">
+            <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Kaynak
+            </h2>
+            <div className="mt-2 space-y-2 text-sm">
+              {article.source_name ? (
+                <p className="font-medium text-foreground">
+                  {article.source_name}
+                </p>
+              ) : null}
+              {article.source_url ? (
+                <a
+                  href={article.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="inline-flex items-center gap-1.5 text-primary transition-opacity hover:opacity-80"
+                >
+                  Orijinal kaynağı aç
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                </a>
+              ) : null}
+            </div>
+          </aside>
+        )}
+
+        <aside className="mt-6 rounded-xl border border-primary/20 bg-accent/40 p-5 text-sm leading-relaxed text-muted-foreground">
+          <h2 className="mb-2 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-foreground">
+            Editoryal not
+          </h2>
+          <p>{settings.ai_disclosure_text}</p>
+        </aside>
+
+        {author ? (
+          <aside className="mt-10 rounded-2xl border border-border bg-card p-5 sm:p-6">
+            <div className="flex gap-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={authorAvatarUrl(author)}
+                alt=""
+                width={64}
+                height={64}
+                className="h-14 w-14 shrink-0 rounded-full bg-muted sm:h-16 sm:w-16"
+              />
+              <div className="min-w-0">
+                <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Yazar
+                </p>
+                <h2 className="mt-1 font-serif text-xl font-semibold tracking-tight">
+                  <Link
+                    href={`/yazar/${author.slug}`}
+                    className="transition-colors hover:text-primary"
+                  >
+                    {author.name}
+                  </Link>
+                </h2>
+                <p className="text-sm font-medium text-primary">{author.role}</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {author.short_bio}
+                </p>
+              </div>
+            </div>
+          </aside>
+        ) : null}
+
+        <Separator className="my-12" />
+
+        <section aria-labelledby="related-heading">
+          <h2
+            id="related-heading"
+            className="mb-6 font-serif text-2xl font-semibold tracking-tight"
+          >
+            Benzer haberler
+          </h2>
+          {related.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Şu an gösterilecek benzer haber bulunmuyor.
+            </p>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2">
+              {related.map((item) => (
+                <RelatedCard key={item.id} article={item} />
+              ))}
+            </div>
+          )}
+        </section>
+      </Container>
+    </article>
+  );
+}
