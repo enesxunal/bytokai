@@ -58,7 +58,7 @@ export function SiteHeader({ categories = [] }: SiteHeaderProps) {
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur-[6px] supports-[backdrop-filter]:bg-background/85">
       <Container className="grid h-[72px] grid-cols-[1fr_auto] items-center gap-2 sm:h-[76px] lg:grid-cols-[auto_1fr_auto] lg:gap-6">
         <div className="min-w-0 justify-self-start">
-          <Logo size="md" />
+          <Logo size="md" priority />
         </div>
 
         <DesktopCategoryNav items={items} />

@@ -1,13 +1,13 @@
 import "server-only";
 
-import { getSafeClient } from "@/lib/database/safe-client";
+import { getPublicAnonClient } from "@/lib/database/safe-client";
 import type { DbSource } from "@/lib/database/types";
 
 export type { DbSource } from "@/lib/database/types";
 
 export async function getSources(): Promise<DbSource[]> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase
@@ -28,7 +28,7 @@ export async function getSourceBySlug(
   slug: string,
 ): Promise<DbSource | null> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return null;
 
     const { data, error } = await supabase

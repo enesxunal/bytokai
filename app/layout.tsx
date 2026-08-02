@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter } from "next/font/google";
-import { headers } from "next/headers";
+import { Inter } from "next/font/google";
 
-import { BookPublishingCta } from "@/components/book-submissions/book-publishing-cta";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { getCategories } from "@/lib/database/categories";
 import { getSiteSettings } from "@/lib/database/settings";
 
 import "./globals.css";
@@ -15,13 +10,6 @@ import "./globals.css";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin", "latin-ext"],
-  display: "swap",
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-ibm-plex-mono",
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -68,48 +56,20 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headerList = await headers();
-  const isAdminShell = headerList.get("x-bytok-admin") === "1";
-
-  if (isAdminShell) {
-    return (
-      <html
-        lang="tr"
-        suppressHydrationWarning
-        className={`${inter.variable} ${ibmPlexMono.variable} h-full`}
-      >
-        <body className="flex min-h-full flex-col bg-mesh">
-          <ThemeProvider>
-            <div className="flex flex-1 flex-col">{children}</div>
-            <Toaster />
-          </ThemeProvider>
-        </body>
-      </html>
-    );
-  }
-
-  const [settings, categories] = await Promise.all([
-    getSiteSettings(),
-    getCategories(),
-  ]);
-
   return (
     <html
       lang="tr"
       suppressHydrationWarning
-      className={`${inter.variable} ${ibmPlexMono.variable} h-full`}
+      className={`${inter.variable} h-full`}
     >
       <body className="flex min-h-full flex-col bg-mesh">
         <ThemeProvider>
-          <SiteHeader categories={categories} />
-          <div className="flex-1">{children}</div>
-          <BookPublishingCta />
-          <SiteFooter settings={settings} categories={categories} />
+          <div className="flex min-h-full flex-1 flex-col">{children}</div>
           <Toaster />
         </ThemeProvider>
       </body>

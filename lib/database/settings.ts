@@ -1,6 +1,8 @@
 import "server-only";
 
-import { getSafeClient } from "@/lib/database/safe-client";
+import { cache } from "react";
+
+import { getPublicAnonClient } from "@/lib/database/safe-client";
 import {
   DEFAULT_SITE_SETTINGS,
   type PublicSiteSettings,
@@ -38,9 +40,9 @@ function asSocial(
   };
 }
 
-export async function getSiteSettings(): Promise<PublicSiteSettings> {
+async function fetchSiteSettings(): Promise<PublicSiteSettings> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return { ...DEFAULT_SITE_SETTINGS };
 
     const { data, error } = await supabase.from("site_settings").select("key, value");
@@ -94,12 +96,14 @@ export async function getSiteSettings(): Promise<PublicSiteSettings> {
   }
 }
 
+export const getSiteSettings = cache(fetchSiteSettings);
+
 export async function getSettingValue<T = unknown>(
   key: string,
   fallback: T,
 ): Promise<T> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return fallback;
 
     const { data, error } = await supabase

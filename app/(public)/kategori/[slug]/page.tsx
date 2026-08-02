@@ -7,9 +7,9 @@ import { ArticleCard } from "@/components/articles/article-card";
 import { Container } from "@/components/shared/container";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Pagination } from "@/components/shared/pagination";
-import { getArticlesByTagSlug } from "@/lib/database/articles";
+import { getArticlesByCategorySlug } from "@/lib/database/articles";
+import { getCategoryBySlug } from "@/lib/database/categories";
 import { getSiteSettings } from "@/lib/database/settings";
-import { getTagBySlug } from "@/lib/database/tags";
 import {
   LISTING_PAGE_SIZE,
   breadcrumbJsonLd,
@@ -18,7 +18,7 @@ import {
   parsePageParam,
 } from "@/lib/listing/helpers";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -32,23 +32,26 @@ export async function generateMetadata({
   const { slug } = await params;
   const sp = await searchParams;
   const page = parsePageParam(sp.sayfa);
-  const [tag, settings] = await Promise.all([
-    getTagBySlug(slug),
+  const [category, settings] = await Promise.all([
+    getCategoryBySlug(slug),
     getSiteSettings(),
   ]);
 
-  if (!tag) {
+  if (!category) {
     return {
-      title: "Etiket bulunamadı",
+      title: "Kategori bulunamadı",
       robots: { index: false, follow: false },
     };
   }
 
-  const title = page > 1 ? `${tag.name} · Sayfa ${page}` : tag.name;
-  const description = `"${tag.name}" etiketiyle ilişkili BYTOK AI haberleri.`;
+  const title =
+    page > 1 ? `${category.name} · Sayfa ${page}` : category.name;
+  const description =
+    category.description?.trim() ||
+    `${category.name} kategorisindeki yapay zekâ ve teknoloji haberleri.`;
   const canonical = listingCanonical(
     settings.site_url,
-    `/etiket/${tag.slug}`,
+    `/kategori/${category.slug}`,
     page,
   );
 
@@ -67,29 +70,32 @@ export async function generateMetadata({
   };
 }
 
-export default async function TagPage({ params, searchParams }: PageProps) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { slug } = await params;
   const sp = await searchParams;
   const page = parsePageParam(sp.sayfa);
 
-  const [tag, settings] = await Promise.all([
-    getTagBySlug(slug),
+  const [category, settings] = await Promise.all([
+    getCategoryBySlug(slug),
     getSiteSettings(),
   ]);
 
-  if (!tag) {
+  if (!category) {
     notFound();
   }
 
-  const articles = await getArticlesByTagSlug(
-    tag.slug,
+  const articles = await getArticlesByCategorySlug(
+    category.slug,
     page,
     LISTING_PAGE_SIZE,
   );
 
   const siteUrl = settings.site_url.replace(/\/$/, "");
   const breadcrumb = breadcrumbJsonLd(siteUrl, [
-    { name: tag.name, path: `/etiket/${tag.slug}` },
+    { name: category.name, path: `/kategori/${category.slug}` },
   ]);
 
   return (
@@ -115,18 +121,20 @@ export default async function TagPage({ params, searchParams }: PageProps) {
               </li>
               <li aria-hidden>/</li>
               <li className="text-foreground/80" aria-current="page">
-                #{tag.name}
+                {category.name}
               </li>
             </ol>
           </nav>
 
           <header className="space-y-3 border-b border-border pb-6">
-            <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Etiket
-            </p>
             <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
-              {tag.name}
+              {category.name}
             </h1>
+            {category.description ? (
+              <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
+                {category.description}
+              </p>
+            ) : null}
             <p className="text-sm text-muted-foreground">
               {articles.total} haber
               {page > 1 ? ` · Sayfa ${page}` : null}
@@ -136,8 +144,8 @@ export default async function TagPage({ params, searchParams }: PageProps) {
           {articles.items.length === 0 ? (
             <EmptyState
               icon={Newspaper}
-              title="Bu etikete bağlı haber yok"
-              description="Yayınlandığında bu etiketle ilişkilendirilmiş içerikler burada listelenir."
+              title="Bu kategoride henüz haber yok"
+              description="Yayınlandığında bu kategorideki içerikler burada listelenir."
             />
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -150,7 +158,7 @@ export default async function TagPage({ params, searchParams }: PageProps) {
           <Pagination
             page={articles.page}
             totalPages={articles.totalPages}
-            basePath={`/etiket/${tag.slug}`}
+            basePath={`/kategori/${category.slug}`}
           />
         </Container>
       </main>

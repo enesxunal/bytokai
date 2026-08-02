@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import {
   getArticleBySlug,
   getRelatedArticles,
@@ -19,7 +21,7 @@ export type ArticlePageData = {
   canonicalUrl: string;
 };
 
-export async function loadArticlePage(
+export const loadArticlePage = cache(async function loadArticlePage(
   slug: string,
 ): Promise<ArticlePageData | null> {
   const article = await getArticleBySlug(slug);
@@ -45,4 +47,4 @@ export async function loadArticlePage(
     bodyHtml,
     canonicalUrl,
   };
-}
+});

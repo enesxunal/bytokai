@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "the-decoder.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "**.supabase.co" },
+      { protocol: "https", hostname: "cdn.bytok.ai" },
+      { protocol: "https", hostname: "api.dicebear.com" },
     ],
   },
   experimental: {

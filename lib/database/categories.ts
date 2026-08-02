@@ -1,15 +1,18 @@
 import "server-only";
 
-import { getSafeClient } from "@/lib/database/safe-client";
-import type { DbCategory } from "@/lib/database/types";
-import { getArticlesByCategorySlug } from "@/lib/database/articles";
-import type { DbArticleWithRelations } from "@/lib/database/types";
+import { cache } from "react";
+
+import { getArticlesByCategoryId } from "@/lib/database/articles";
+import { getPublicAnonClient } from "@/lib/database/safe-client";
+import type { DbArticleWithRelations, DbCategory } from "@/lib/database/types";
 
 export type { DbCategory } from "@/lib/database/types";
 
-export async function getCategories(): Promise<DbCategory[]> {
+export const getCategories = cache(async function getCategories(): Promise<
+  DbCategory[]
+> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase
@@ -23,13 +26,13 @@ export async function getCategories(): Promise<DbCategory[]> {
   } catch {
     return [];
   }
-}
+});
 
-export async function getCategoryBySlug(
+export const getCategoryBySlug = cache(async function getCategoryBySlug(
   slug: string,
 ): Promise<DbCategory | null> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return null;
 
     const { data, error } = await supabase
@@ -44,7 +47,7 @@ export async function getCategoryBySlug(
   } catch {
     return null;
   }
-}
+});
 
 export async function getCategorySection(
   slug: string,
@@ -59,7 +62,7 @@ export async function getCategorySection(
       return { category: null, articles: [] };
     }
 
-    const result = await getArticlesByCategorySlug(slug, 1, limit);
+    const result = await getArticlesByCategoryId(category.id, 1, limit);
     return { category, articles: result.items };
   } catch {
     return { category: null, articles: [] };
@@ -70,7 +73,7 @@ export async function getAllCategorySlugs(): Promise<
   Array<{ slug: string; updated_at: string }>
 > {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase

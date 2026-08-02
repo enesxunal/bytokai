@@ -1,18 +1,23 @@
 import "server-only";
 
-import { getSafeClient } from "@/lib/database/safe-client";
+import { cache } from "react";
+
+import { getPublicAnonClient } from "@/lib/database/safe-client";
 import type { DbAuthor } from "@/lib/database/types";
+import { AUTHOR_PUBLIC_SELECT } from "@/lib/database/types";
 
 export type { DbAuthor } from "@/lib/database/types";
 
-export async function getAuthors(limit = 24): Promise<DbAuthor[]> {
+export const getAuthors = cache(async function getAuthors(
+  limit = 24,
+): Promise<DbAuthor[]> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase
       .from("authors")
-      .select("*")
+      .select(AUTHOR_PUBLIC_SELECT)
       .eq("active", true)
       .order("name", { ascending: true })
       .limit(limit);
@@ -22,18 +27,18 @@ export async function getAuthors(limit = 24): Promise<DbAuthor[]> {
   } catch {
     return [];
   }
-}
+});
 
-export async function getAuthorBySlug(
+export const getAuthorBySlug = cache(async function getAuthorBySlug(
   slug: string,
 ): Promise<DbAuthor | null> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return null;
 
     const { data, error } = await supabase
       .from("authors")
-      .select("*")
+      .select(AUTHOR_PUBLIC_SELECT)
       .eq("slug", slug)
       .eq("active", true)
       .maybeSingle();
@@ -43,13 +48,13 @@ export async function getAuthorBySlug(
   } catch {
     return null;
   }
-}
+});
 
 export async function getAllAuthorSlugs(): Promise<
   Array<{ slug: string; updated_at: string }>
 > {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase

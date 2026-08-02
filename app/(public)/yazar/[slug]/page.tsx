@@ -22,7 +22,7 @@ import {
   parsePageParam,
 } from "@/lib/listing/helpers";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ slug: string }>;

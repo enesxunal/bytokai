@@ -1,10 +1,10 @@
 import "server-only";
 
+import { cache } from "react";
+
+import { getPublicAnonClient } from "@/lib/database/safe-client";
 import {
-  getPublicAnonClient,
-  getSafeClient,
-} from "@/lib/database/safe-client";
-import {
+  ARTICLE_LIST_SELECT,
   ARTICLE_SELECT,
   emptyPage,
   mapArticleRow,
@@ -36,6 +36,14 @@ function paginateMeta(
   };
 }
 
+function mapRows(data: unknown): DbArticleWithRelations[] {
+  return (data as unknown as ArticleRowWithJoins[]).map(mapArticleRow);
+}
+
+function mapRow(data: unknown): DbArticleWithRelations {
+  return mapArticleRow(data as unknown as ArticleRowWithJoins);
+}
+
 export async function getFeaturedArticles(
   limit = 5,
 ): Promise<DbArticleWithRelations[]> {
@@ -45,14 +53,14 @@ export async function getFeaturedArticles(
 
     const { data, error } = await supabase
       .from("articles")
-      .select(ARTICLE_SELECT)
+      .select(ARTICLE_LIST_SELECT)
       .eq("status", "published")
       .eq("featured", true)
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(limit);
 
     if (error || !data) return [];
-    return (data as ArticleRowWithJoins[]).map(mapArticleRow);
+    return mapRows(data);
   } catch {
     return [];
   }
@@ -68,13 +76,13 @@ export async function getLatestArticles(
 
     const { data, error } = await supabase
       .from("articles")
-      .select(ARTICLE_SELECT)
+      .select(ARTICLE_LIST_SELECT)
       .eq("status", "published")
       .order("published_at", { ascending: false, nullsFirst: false })
       .range(offset, offset + limit - 1);
 
     if (error || !data) return [];
-    return (data as ArticleRowWithJoins[]).map(mapArticleRow);
+    return mapRows(data);
   } catch {
     return [];
   }
@@ -84,21 +92,52 @@ export async function getPopularArticles(
   limit = 6,
 ): Promise<DbArticleWithRelations[]> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase
       .from("articles")
-      .select(ARTICLE_SELECT)
+      .select(ARTICLE_LIST_SELECT)
       .eq("status", "published")
       .order("view_count", { ascending: false })
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(limit);
 
     if (error || !data) return [];
-    return (data as ArticleRowWithJoins[]).map(mapArticleRow);
+    return mapRows(data);
   } catch {
     return [];
+  }
+}
+
+export async function getArticlesByCategoryId(
+  categoryId: string,
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+): Promise<DbPaginatedResult<DbArticleWithRelations>> {
+  try {
+    const supabase = getPublicAnonClient();
+    if (!supabase) return emptyPage(page, pageSize);
+
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
+      .from("articles")
+      .select(ARTICLE_LIST_SELECT, { count: "exact" })
+      .eq("status", "published")
+      .eq("category_id", categoryId)
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .range(from, to);
+
+    if (error || !data) return emptyPage(page, pageSize);
+
+    return {
+      items: mapRows(data),
+      ...paginateMeta(count ?? 0, page, pageSize),
+    };
+  } catch {
+    return emptyPage(page, pageSize);
   }
 }
 
@@ -107,9 +146,8 @@ export async function getArticlesByCategorySlug(
   page = 1,
   pageSize = DEFAULT_PAGE_SIZE,
 ): Promise<DbPaginatedResult<DbArticleWithRelations>> {
-  const meta = paginateMeta(0, page, pageSize);
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return emptyPage(page, pageSize);
 
     const { data: category, error: catError } = await supabase
@@ -121,23 +159,7 @@ export async function getArticlesByCategorySlug(
 
     if (catError || !category) return emptyPage(page, pageSize);
 
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
-
-    const { data, error, count } = await supabase
-      .from("articles")
-      .select(ARTICLE_SELECT, { count: "exact" })
-      .eq("status", "published")
-      .eq("category_id", category.id)
-      .order("published_at", { ascending: false, nullsFirst: false })
-      .range(from, to);
-
-    if (error || !data) return emptyPage(page, pageSize);
-
-    return {
-      items: (data as ArticleRowWithJoins[]).map(mapArticleRow),
-      ...paginateMeta(count ?? 0, page, pageSize),
-    };
+    return getArticlesByCategoryId(category.id, page, pageSize);
   } catch {
     return emptyPage(page, pageSize);
   }
@@ -149,7 +171,7 @@ export async function getArticlesByAuthorSlug(
   pageSize = DEFAULT_PAGE_SIZE,
 ): Promise<DbPaginatedResult<DbArticleWithRelations>> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return emptyPage(page, pageSize);
 
     const { data: author, error: authorError } = await supabase
@@ -166,7 +188,7 @@ export async function getArticlesByAuthorSlug(
 
     const { data, error, count } = await supabase
       .from("articles")
-      .select(ARTICLE_SELECT, { count: "exact" })
+      .select(ARTICLE_LIST_SELECT, { count: "exact" })
       .eq("status", "published")
       .eq("author_id", author.id)
       .order("published_at", { ascending: false, nullsFirst: false })
@@ -175,7 +197,7 @@ export async function getArticlesByAuthorSlug(
     if (error || !data) return emptyPage(page, pageSize);
 
     return {
-      items: (data as ArticleRowWithJoins[]).map(mapArticleRow),
+      items: mapRows(data),
       ...paginateMeta(count ?? 0, page, pageSize),
     };
   } catch {
@@ -189,7 +211,7 @@ export async function getArticlesByTagSlug(
   pageSize = DEFAULT_PAGE_SIZE,
 ): Promise<DbPaginatedResult<DbArticleWithRelations>> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return emptyPage(page, pageSize);
 
     const { data: tag, error: tagError } = await supabase
@@ -200,29 +222,24 @@ export async function getArticlesByTagSlug(
 
     if (tagError || !tag) return emptyPage(page, pageSize);
 
-    const { data: links, error: linkError } = await supabase
-      .from("article_tags")
-      .select("article_id")
-      .eq("tag_id", tag.id);
-
-    if (linkError || !links?.length) return emptyPage(page, pageSize);
-
-    const articleIds = links.map((l) => l.article_id);
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
     const { data, error, count } = await supabase
       .from("articles")
-      .select(ARTICLE_SELECT, { count: "exact" })
+      .select(
+        `${ARTICLE_LIST_SELECT}, article_tags!inner(tag_id)`,
+        { count: "exact" },
+      )
       .eq("status", "published")
-      .in("id", articleIds)
+      .eq("article_tags.tag_id", tag.id)
       .order("published_at", { ascending: false, nullsFirst: false })
       .range(from, to);
 
     if (error || !data) return emptyPage(page, pageSize);
 
     return {
-      items: (data as ArticleRowWithJoins[]).map(mapArticleRow),
+      items: mapRows(data),
       ...paginateMeta(count ?? 0, page, pageSize),
     };
   } catch {
@@ -230,11 +247,11 @@ export async function getArticlesByTagSlug(
   }
 }
 
-export async function getArticleBySlug(
+export const getArticleBySlug = cache(async function getArticleBySlug(
   slug: string,
 ): Promise<DbArticleWithRelations | null> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return null;
 
     const { data, error } = await supabase
@@ -245,23 +262,23 @@ export async function getArticleBySlug(
       .maybeSingle();
 
     if (error || !data) return null;
-    return mapArticleRow(data as ArticleRowWithJoins);
+    return mapRow(data);
   } catch {
     return null;
   }
-}
+});
 
 export async function getRelatedArticles(
   article: DbArticleWithRelations,
   limit = 4,
 ): Promise<DbArticleWithRelations[]> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     let query = supabase
       .from("articles")
-      .select(ARTICLE_SELECT)
+      .select(ARTICLE_LIST_SELECT)
       .eq("status", "published")
       .neq("id", article.id)
       .order("published_at", { ascending: false, nullsFirst: false })
@@ -274,7 +291,7 @@ export async function getRelatedArticles(
     const { data, error } = await query;
     if (error || !data) return [];
 
-    const mapped = (data as ArticleRowWithJoins[]).map(mapArticleRow);
+    const mapped = mapRows(data);
     if (mapped.length >= limit || !article.category_id) {
       return mapped.slice(0, limit);
     }
@@ -282,7 +299,7 @@ export async function getRelatedArticles(
     const excludeIds = [article.id, ...mapped.map((a) => a.id)];
     const { data: fallback } = await supabase
       .from("articles")
-      .select(ARTICLE_SELECT)
+      .select(ARTICLE_LIST_SELECT)
       .eq("status", "published")
       .not("id", "in", `(${excludeIds.join(",")})`)
       .order("published_at", { ascending: false, nullsFirst: false })
@@ -291,9 +308,7 @@ export async function getRelatedArticles(
     if (!fallback) return mapped;
 
     const existing = new Set(mapped.map((a) => a.id));
-    const extra = (fallback as ArticleRowWithJoins[])
-      .map(mapArticleRow)
-      .filter((a) => !existing.has(a.id));
+    const extra = mapRows(fallback).filter((a) => !existing.has(a.id));
 
     return [...mapped, ...extra].slice(0, limit);
   } catch {
@@ -308,7 +323,7 @@ export async function getAdjacentArticles(
   next: DbArticleWithRelations | null;
 }> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase || !article.published_at) {
       return { prev: null, next: null };
     }
@@ -316,7 +331,7 @@ export async function getAdjacentArticles(
     const [{ data: prevData }, { data: nextData }] = await Promise.all([
       supabase
         .from("articles")
-        .select(ARTICLE_SELECT)
+        .select(ARTICLE_LIST_SELECT)
         .eq("status", "published")
         .lt("published_at", article.published_at)
         .order("published_at", { ascending: false })
@@ -324,7 +339,7 @@ export async function getAdjacentArticles(
         .maybeSingle(),
       supabase
         .from("articles")
-        .select(ARTICLE_SELECT)
+        .select(ARTICLE_LIST_SELECT)
         .eq("status", "published")
         .gt("published_at", article.published_at)
         .order("published_at", { ascending: true })
@@ -334,10 +349,10 @@ export async function getAdjacentArticles(
 
     return {
       prev: prevData
-        ? mapArticleRow(prevData as ArticleRowWithJoins)
+        ? mapRow(prevData)
         : null,
       next: nextData
-        ? mapArticleRow(nextData as ArticleRowWithJoins)
+        ? mapRow(nextData)
         : null,
     };
   } catch {
@@ -362,7 +377,7 @@ export async function searchArticles(
   if (!q) return emptyPage(page, pageSize);
 
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return emptyPage(page, pageSize);
 
     const from = (page - 1) * pageSize;
@@ -389,11 +404,8 @@ export async function searchArticles(
       ];
     }
 
-    const filters = [
-      `title.ilike.${pattern}`,
-      `excerpt.ilike.${pattern}`,
-      `content_markdown.ilike.${pattern}`,
-    ];
+    // Prefer title/excerpt/tags — skip full-body ILIKE for speed.
+    const filters = [`title.ilike.${pattern}`, `excerpt.ilike.${pattern}`];
 
     if (tagArticleIds.length > 0) {
       filters.push(`id.in.(${tagArticleIds.join(",")})`);
@@ -401,7 +413,7 @@ export async function searchArticles(
 
     const { data, error, count } = await supabase
       .from("articles")
-      .select(ARTICLE_SELECT, { count: "exact" })
+      .select(ARTICLE_LIST_SELECT, { count: "exact" })
       .eq("status", "published")
       .or(filters.join(","))
       .order("published_at", { ascending: false, nullsFirst: false })
@@ -410,7 +422,7 @@ export async function searchArticles(
     if (error || !data) return emptyPage(page, pageSize);
 
     return {
-      items: (data as ArticleRowWithJoins[]).map(mapArticleRow),
+      items: mapRows(data),
       ...paginateMeta(count ?? 0, page, pageSize),
     };
   } catch {
@@ -422,7 +434,7 @@ export async function getAllPublishedSlugs(): Promise<
   Array<{ slug: string; updated_at: string; published_at: string | null }>
 > {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase

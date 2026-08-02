@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArticleDetail } from "@/components/articles/article-detail";
 import { loadArticlePage } from "@/lib/articles/load-article-page";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ slug: string }>;

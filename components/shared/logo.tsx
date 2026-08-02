@@ -9,6 +9,8 @@ type LogoProps = {
   size?: "sm" | "md" | "lg";
   /** Prefer horizontal wordmark image; set false for text-only mark. */
   wordmark?: boolean;
+  /** Only the header LCP logo should stay priority. */
+  priority?: boolean;
 };
 
 /** Intrinsic logo aspect: 1600×420 */
@@ -38,6 +40,7 @@ export function Logo({
   href = "/",
   size = "md",
   wordmark = true,
+  priority = false,
 }: LogoProps) {
   const height = imageHeights[size];
   const width = Math.round(height * LOGO_ASPECT);
@@ -49,7 +52,7 @@ export function Logo({
       width={width}
       height={height}
       className={cn(imageClass[size], "object-contain object-left", className)}
-      priority
+      priority={priority}
       sizes="(max-width: 640px) 122px, 145px"
     />
   ) : (

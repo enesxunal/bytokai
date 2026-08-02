@@ -10,7 +10,7 @@ import { getSiteSettings } from "@/lib/database/settings";
 import type { DbSource } from "@/lib/database/types";
 import { absoluteUrl } from "@/lib/listing/helpers";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();

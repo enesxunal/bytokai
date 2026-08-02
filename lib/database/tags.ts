@@ -1,13 +1,17 @@
 import "server-only";
 
-import { getSafeClient } from "@/lib/database/safe-client";
+import { cache } from "react";
+
+import { getPublicAnonClient } from "@/lib/database/safe-client";
 import type { DbTag } from "@/lib/database/types";
 
 export type { DbTag } from "@/lib/database/types";
 
-export async function getTagBySlug(slug: string): Promise<DbTag | null> {
+export const getTagBySlug = cache(async function getTagBySlug(
+  slug: string,
+): Promise<DbTag | null> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return null;
 
     const { data, error } = await supabase
@@ -21,11 +25,11 @@ export async function getTagBySlug(slug: string): Promise<DbTag | null> {
   } catch {
     return null;
   }
-}
+});
 
 export async function getPopularTags(limit = 20): Promise<DbTag[]> {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase
@@ -45,7 +49,7 @@ export async function getAllTagSlugs(): Promise<
   Array<{ slug: string; created_at: string }>
 > {
   try {
-    const supabase = await getSafeClient();
+    const supabase = getPublicAnonClient();
     if (!supabase) return [];
 
     const { data, error } = await supabase

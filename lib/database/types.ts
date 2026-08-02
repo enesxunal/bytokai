@@ -157,15 +157,58 @@ export const DEFAULT_SITE_SETTINGS: PublicSiteSettings = {
   enable_newsletter: true,
 };
 
-export const ARTICLE_SELECT = `
-  *,
-  author:authors(*),
+export const AUTHOR_PUBLIC_SELECT =
+  "id, name, slug, role, short_bio, full_bio, expertise, tone, avatar_seed, active, created_at, updated_at";
+
+export const ARTICLE_LIST_SELECT = `
+  id,
+  raw_article_id,
+  author_id,
+  category_id,
+  title,
+  slug,
+  excerpt,
+  cover_image_url,
+  source_name,
+  source_url,
+  source_published_at,
+  status,
+  featured,
+  breaking,
+  ai_generated,
+  ai_model,
+  ai_confidence_score,
+  risk_flags,
+  seo_title,
+  seo_description,
+  reading_time_minutes,
+  scheduled_at,
+  published_at,
+  view_count,
+  created_at,
+  updated_at,
+  author:authors(${AUTHOR_PUBLIC_SELECT}),
   category:categories(*),
   tags:article_tags(tag:tags(*))
 `;
 
-export type ArticleRowWithJoins = DbArticle & {
-  author: DbAuthor | null;
+export const ARTICLE_SELECT = `
+  *,
+  author:authors(${AUTHOR_PUBLIC_SELECT}),
+  category:categories(*),
+  tags:article_tags(tag:tags(*))
+`;
+
+export type ArticleRowWithJoins = Omit<
+  DbArticle,
+  "content_markdown" | "content_html"
+> & {
+  content_markdown?: string | null;
+  content_html?: string | null;
+  author: (Omit<DbAuthor, "writing_rules" | "system_prompt"> & {
+    writing_rules?: string;
+    system_prompt?: string;
+  }) | null;
   category: DbCategory | null;
   tags:
     | Array<{ tag: DbTag | null }>
@@ -177,11 +220,19 @@ export function mapArticleRow(row: ArticleRowWithJoins): DbArticleWithRelations 
     .map((entry) => entry.tag)
     .filter((tag): tag is DbTag => Boolean(tag));
 
-  const { tags: _tags, ...rest } = row;
+  const { tags: _tags, author, category, ...rest } = row;
   return {
     ...rest,
-    author: row.author ?? null,
-    category: row.category ?? null,
+    content_markdown: rest.content_markdown ?? "",
+    content_html: rest.content_html ?? "",
+    author: author
+      ? {
+          ...author,
+          writing_rules: author.writing_rules ?? "",
+          system_prompt: author.system_prompt ?? "",
+        }
+      : null,
+    category: category ?? null,
     tags,
   };
 }
