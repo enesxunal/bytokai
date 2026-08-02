@@ -199,11 +199,10 @@ export function AuthorsListView({ data }: { data: AdminAuthorsListResult }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <h1 className="font-sans text-2xl font-semibold tracking-tight">
-            Yazar Personaları
+            Yazar Profilleri
           </h1>
           <p className="text-sm text-muted-foreground">
-            BYTOK AI editoryal personlarını yönetin. Bunlar gerçek kişiler değil;
-            haber üretimi için kurgusal seslerdir.
+            BYTOK AI yazar profillerini ve editoryal yazım stillerini yönetin.
             {!connected ? (
               <span className="mt-1 block text-warning">
                 Veritabanı bağlantısı yok; liste güvenli boş durumda.
@@ -214,7 +213,7 @@ export function AuthorsListView({ data }: { data: AdminAuthorsListResult }) {
         <Button size="sm" asChild>
           <Link href="/admin/authors/new">
             <Plus className="size-3.5" aria-hidden />
-            Yeni persona
+            Yeni profil
           </Link>
         </Button>
       </div>
@@ -225,12 +224,12 @@ export function AuthorsListView({ data }: { data: AdminAuthorsListResult }) {
         <EmptyState
           icon={Database}
           title="Veritabanı bağlı değil"
-          description="Supabase ortam değişkenlerini ayarladıktan sonra yazar personası listesi burada görünecek."
+          description="Supabase ortam değişkenlerini ayarladıktan sonra yazar profili listesi burada görünecek."
         />
       ) : result.items.length === 0 ? (
         <EmptyState
-          title="Persona bulunamadı"
-          description="Filtrelere uyan yazar personası yok. Filtreleri temizleyerek tekrar deneyin."
+          title="Profil bulunamadı"
+          description="Filtrelere uyan yazar profili yok. Filtreleri temizleyerek tekrar deneyin."
           action={
             <Button variant="outline" size="sm" asChild>
               <Link href="/admin/authors">Filtreleri temizle</Link>

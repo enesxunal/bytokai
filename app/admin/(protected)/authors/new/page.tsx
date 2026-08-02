@@ -10,7 +10,7 @@ import { hasSupabaseEnv } from "@/lib/database/safe-client";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Yeni yazar personası",
+  title: "Yeni yazar profili",
   robots: { index: false, follow: false },
 };
 
@@ -19,12 +19,12 @@ export default function AdminAuthorNewPage() {
     return (
       <div className="space-y-6">
         <h1 className="font-sans text-2xl font-semibold tracking-tight">
-          Yeni yazar personası
+          Yeni yazar profili
         </h1>
         <EmptyState
           icon={Database}
           title="Veritabanı bağlı değil"
-          description="Supabase ortam değişkenlerini ayarladıktan sonra persona oluşturma formu burada görünecek."
+          description="Supabase ortam değişkenlerini ayarladıktan sonra profil oluşturma formu burada görünecek."
           action={
             <Button variant="outline" size="sm" asChild>
               <Link href="/admin/authors">Listeye dön</Link>

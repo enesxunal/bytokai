@@ -168,7 +168,7 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
             alt={article.title}
             priority
             logoSize="lg"
-            imageClassName="object-cover object-bottom"
+            imageClassName="object-cover object-center"
             sizes="(max-width: 768px) 100vw, 768px"
           />
         </div>
@@ -230,7 +230,7 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
                 alt=""
                 width={48}
                 height={48}
-                className="h-12 w-12 shrink-0 rounded-full bg-muted"
+                className="h-12 w-12 shrink-0 rounded-full border border-border/50 bg-muted shadow-sm"
               />
               <div className="min-w-0">
                 <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-foreground/55">
@@ -247,10 +247,7 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
                 <p className="text-sm font-medium text-primary">{author.role}</p>
                 {author.short_bio ? (
                   <p className="mt-1.5 text-sm leading-relaxed text-foreground/70">
-                    {author.short_bio
-                      .replace(/\beditoryal personası\b/gi, "yazar")
-                      .replace(/\bpersonası\b/gi, "yazar")
-                      .replace(/\bpersona\b/gi, "yazar")}
+                    {author.short_bio}
                   </p>
                 ) : null}
               </div>

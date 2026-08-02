@@ -85,10 +85,10 @@ export function AuthorActions({
     <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Personayı sil</AlertDialogTitle>
+          <AlertDialogTitle>Profili sil</AlertDialogTitle>
           <AlertDialogDescription>
             {articleCount > 0
-              ? `“${name}” personasına bağlı ${articleCount} haber var. Silme engellenir; bunun yerine pasifleştirin.`
+              ? `“${name}” profiline bağlı ${articleCount} haber var. Silme engellenir; bunun yerine pasifleştirin.`
               : `“${name}” kalıcı olarak silinecek. Bu işlem geri alınamaz.`}
           </AlertDialogDescription>
         </AlertDialogHeader>

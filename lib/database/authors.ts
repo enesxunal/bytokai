@@ -69,8 +69,17 @@ export async function getAllAuthorSlugs(): Promise<
   }
 }
 
-/** DiceBear avatar URL from avatar_seed for personas without uploaded images. */
+/** DiceBear abstract shapes avatar from avatar_seed (no photo-like portraits). */
 export function authorAvatarUrl(author: Pick<DbAuthor, "avatar_seed" | "name">): string {
-  const seed = encodeURIComponent(author.avatar_seed || author.name);
-  return `https://api.dicebear.com/9.x/shapes/svg?seed=${seed}`;
+  const params = new URLSearchParams({
+    seed: author.avatar_seed || author.name,
+    size: "128",
+    radius: "50",
+    backgroundType: "solid",
+    backgroundColor: "e8eef6,d7e4f2,c9d9ec",
+    shape1Color: "0b1f3a,1565ef,1d4ed8",
+    shape2Color: "64748b,94a3b8,475569",
+    shape3Color: "0f172a,1e3a5f,334155",
+  });
+  return `https://api.dicebear.com/9.x/shapes/svg?${params.toString()}`;
 }

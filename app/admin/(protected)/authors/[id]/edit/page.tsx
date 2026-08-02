@@ -20,7 +20,7 @@ export async function generateMetadata({
   const { id } = await params;
   const { author } = await getAdminAuthorById(id);
   return {
-    title: author ? `Düzenle: ${author.name}` : "Personayı düzenle",
+    title: author ? `Düzenle: ${author.name}` : "Profili düzenle",
     robots: { index: false, follow: false },
   };
 }
@@ -33,7 +33,7 @@ export default async function AdminAuthorEditPage({ params }: PageProps) {
     return (
       <div className="space-y-6">
         <h1 className="font-sans text-2xl font-semibold tracking-tight">
-          Personayı düzenle
+          Profili düzenle
         </h1>
         <EmptyState
           icon={Database}

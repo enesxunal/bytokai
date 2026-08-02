@@ -110,7 +110,7 @@ export default async function AuthorPage({
         dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumb) }}
       />
       <main>
-        <Container className="space-y-10 py-8 sm:py-12">
+        <Container size="lg" className="space-y-10 overflow-x-hidden py-8 sm:py-12">
           <nav
             aria-label="Breadcrumb"
             className="text-sm text-muted-foreground"
@@ -134,37 +134,34 @@ export default async function AuthorPage({
                 </Link>
               </li>
               <li aria-hidden>/</li>
-              <li className="text-foreground/80" aria-current="page">
+              <li className="min-w-0 truncate text-foreground/80" aria-current="page">
                 {author.name}
               </li>
             </ol>
           </nav>
 
-          <header className="space-y-6 border-b border-border pb-8">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <header className="space-y-8 border-b border-border pb-10">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={authorAvatarUrl(author)}
                 alt=""
-                width={96}
-                height={96}
-                className="h-20 w-20 shrink-0 rounded-full bg-muted sm:h-24 sm:w-24"
+                width={128}
+                height={128}
+                className="h-24 w-24 shrink-0 rounded-full border border-border/60 bg-muted shadow-sm sm:h-32 sm:w-32"
               />
-              <div className="min-w-0 space-y-3">
-                <div>
-                  <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
+              <div className="min-w-0 flex-1 space-y-4">
+                <div className="space-y-2">
+                  <h1 className="font-serif text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
                     {author.name}
                   </h1>
-                  <p className="mt-1 text-sm font-medium text-primary">
+                  <p className="text-sm font-medium text-primary sm:text-base">
                     {author.role}
                   </p>
                 </div>
                 {author.short_bio ? (
-                  <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-                    {author.short_bio
-                      .replace(/\beditoryal personası\b/gi, "yazar")
-                      .replace(/\bpersonası\b/gi, "yazar")
-                      .replace(/\bpersona\b/gi, "yazar")}
+                  <p className="max-w-2xl text-base leading-relaxed text-muted-foreground text-pretty">
+                    {author.short_bio}
                   </p>
                 ) : null}
                 {author.expertise.length > 0 ? (
@@ -180,36 +177,41 @@ export default async function AuthorPage({
             </div>
 
             {author.full_bio ? (
-              <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                {author.full_bio
-                  .replace(/\beditoryal personası\b/gi, "yazar")
-                  .replace(/\bpersonası\b/gi, "yazar")
-                  .replace(/\bpersona\b/gi, "yazar")
-                  .replace(/\bkurgusal bir editoryal ses[^.]*\./gi, "")
-                  .replace(/\s{2,}/g, " ")
-                  .trim()}
-              </p>
+              <div className="max-w-3xl space-y-3">
+                <h2 className="font-serif text-lg font-semibold tracking-tight sm:text-xl">
+                  Hakkında
+                </h2>
+                <p className="text-sm leading-relaxed text-muted-foreground text-pretty sm:text-base">
+                  {author.full_bio}
+                </p>
+              </div>
             ) : null}
 
-            <p className="text-sm text-muted-foreground">
-              {articles.total} haber
+            <p className="text-sm tabular-nums text-muted-foreground">
+              {articles.total} yayın
               {page > 1 ? ` · Sayfa ${page}` : null}
             </p>
           </header>
 
-          {articles.items.length === 0 ? (
-            <EmptyState
-              icon={Newspaper}
-              title="Bu yazara ait haber yok"
-              description="Yayınlandığında bu yazara ait içerikler burada listelenir."
-            />
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {articles.items.map((article) => (
-                <ArticleCard key={article.id} article={article} />
-              ))}
-            </div>
-          )}
+          <section className="space-y-6">
+            <h2 className="font-serif text-2xl font-semibold tracking-tight">
+              Son Yazıları
+            </h2>
+
+            {articles.items.length === 0 ? (
+              <EmptyState
+                icon={Newspaper}
+                title="Bu yazara ait haber yok"
+                description="Yayınlandığında bu yazara ait içerikler burada listelenir."
+              />
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {articles.items.map((article) => (
+                  <ArticleCard key={article.id} article={article} />
+                ))}
+              </div>
+            )}
+          </section>
 
           <Pagination
             page={articles.page}

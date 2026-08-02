@@ -79,6 +79,13 @@ const SECTIONS = [
       "Belirsiz, çelişkili veya yüksek riskli konular ek incelemeye bırakılabilir.",
     ],
   },
+  {
+    id: "yazar-profilleri",
+    title: "Yazar profilleri",
+    body: [
+      "BYTOK AI yazar profilleri, yayın içindeki farklı editoryal sesleri ve uzmanlık alanlarını temsil eder.",
+    ],
+  },
 ] as const;
 
 export default async function EditorialPolicyPage() {

@@ -6,7 +6,7 @@ import { loadAdminAuthorsList } from "@/lib/admin/authors";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Yazar Personaları",
+  title: "Yazar Profilleri",
   robots: { index: false, follow: false },
 };
 

@@ -274,17 +274,6 @@ function sectionTitleFallback(slug: string): string {
   return map[slug] ?? slug;
 }
 
-function publicBio(text: string | null | undefined): string {
-  if (!text) return "";
-  return text
-    .replace(/\beditoryal personası\b/gi, "yazar")
-    .replace(/\bpersonası\b/gi, "yazar")
-    .replace(/\bpersona\b/gi, "yazar")
-    .replace(/\bkurgusal bir editoryal ses[^.]*\./gi, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-}
-
 function AuthorsSection({ authors }: { authors: DbAuthor[] }) {
   if (authors.length === 0) return null;
 
@@ -292,39 +281,39 @@ function AuthorsSection({ authors }: { authors: DbAuthor[] }) {
     <section id="yazarlar" className="scroll-mt-24">
       <SectionHeading
         title="Yazarlar"
-        description="BYTOK AI yayınında farklı uzmanlık alanlarında yazan yazarlar."
+        description="Teknoloji gündemini farklı uzmanlık alanlarından değerlendiren BYTOK AI yazarları."
       />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-wrap justify-center gap-4">
         {authors.map((author) => {
-          const bio = publicBio(author.short_bio);
+          const bio = author.short_bio?.trim() ?? "";
           return (
-          <Link
-            key={author.id}
-            href={`/yazar/${author.slug}`}
-            className="flex gap-3.5 rounded-xl border border-border/70 bg-card p-4 transition-colors hover:border-primary/35"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={authorAvatarUrl(author)}
-              alt=""
-              width={48}
-              height={48}
-              className="h-12 w-12 shrink-0 rounded-full bg-muted"
-            />
-            <div className="min-w-0">
-              <h3 className="font-serif text-lg font-semibold tracking-tight">
-                {author.name}
-              </h3>
-              <p className="mt-0.5 text-sm font-medium text-primary">
-                {author.role}
-              </p>
-              {bio ? (
-                <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-foreground/65">
-                  {bio}
+            <Link
+              key={author.id}
+              href={`/yazar/${author.slug}`}
+              className="flex w-full min-h-[9.5rem] gap-4 rounded-xl border border-border/70 bg-card p-4 transition-colors hover:border-primary/35 sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)]"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={authorAvatarUrl(author)}
+                alt=""
+                width={64}
+                height={64}
+                className="h-14 w-14 shrink-0 rounded-full border border-border/50 bg-muted shadow-sm sm:h-16 sm:w-16"
+              />
+              <div className="flex min-w-0 flex-1 flex-col">
+                <h3 className="font-serif text-base font-semibold tracking-tight sm:text-lg">
+                  {author.name}
+                </h3>
+                <p className="mt-0.5 text-sm font-medium text-primary">
+                  {author.role}
                 </p>
-              ) : null}
-            </div>
-          </Link>
+                {bio ? (
+                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-foreground/65">
+                    {bio}
+                  </p>
+                ) : null}
+              </div>
+            </Link>
           );
         })}
       </div>

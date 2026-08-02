@@ -16,7 +16,7 @@ export async function generateMetadata({
   const { id } = await params;
   const { author } = await loadAdminAuthorDetail(id);
   return {
-    title: author ? author.name : "Yazar personası",
+    title: author ? author.name : "Yazar profili",
     robots: { index: false, follow: false },
   };
 }

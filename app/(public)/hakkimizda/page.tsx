@@ -30,34 +30,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const AUTHOR_FOCUS = [
-  {
-    role: "Vizyoner / Trend Takipçisi",
-    focus:
-      "Gelecek odaklı anlatım; sektör trendlerini ve olası etkileri öne çıkarır.",
-  },
-  {
-    role: "Teknik / Developer",
-    focus:
-      "Teknik ayrıntılar, mimari, araçlar ve geliştirici etkisini açıklar.",
-  },
-  {
-    role: "Kurumsal / Stratejist",
-    focus:
-      "Şirketler, pazar, rekabet, yatırım ve iş stratejisi odaklı anlatım.",
-  },
-  {
-    role: "Akademik / Analist",
-    focus:
-      "Temkinli, kanıta dayalı; bağlam ve araştırma metodolojisini öne çıkarır.",
-  },
-  {
-    role: "Eleştirmen / Sektör Yorumcusu",
-    focus:
-      "İddiaları sorgular; riskleri, çelişkileri ve toplumsal etkileri ele alır.",
-  },
-] as const;
-
 export default async function AboutPage() {
   const [settings, authors] = await Promise.all([
     getSiteSettings(),
@@ -119,56 +91,48 @@ export default async function AboutPage() {
               Yayınımızda farklı uzmanlık alanlarına sahip yazarlar yer alır.
               Her yazar kendi üslubu ve odağıyla yazar.
             </p>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              BYTOK AI yazar profilleri, yayın içindeki farklı editoryal sesleri
+              ve uzmanlık alanlarını temsil eder.
+            </p>
           </div>
 
           <ul className="space-y-4">
-            {AUTHOR_FOCUS.map((item) => {
-              const matched = authors.find((a) => a.role === item.role);
-              return (
-                <li
-                  key={item.role}
-                  className="rounded-xl border border-border bg-card/50 p-5"
-                >
-                  {matched ? (
-                    <div className="flex gap-4">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={authorAvatarUrl(matched)}
-                        alt=""
-                        width={48}
-                        height={48}
-                        className="h-12 w-12 shrink-0 rounded-full bg-muted"
-                      />
-                      <div className="min-w-0">
-                        <h3 className="font-serif text-xl font-semibold tracking-tight">
-                          <Link
-                            href={`/yazar/${matched.slug}`}
-                            className="transition-colors hover:text-primary"
-                          >
-                            {matched.name}
-                          </Link>
-                        </h3>
-                        <p className="mt-0.5 text-sm font-medium text-primary">
-                          {matched.role}
-                        </p>
-                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                          {matched.short_bio?.trim() || item.focus}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-sm font-medium text-primary">
-                        {item.role}
-                      </p>
+            {authors.map((author) => (
+              <li
+                key={author.id}
+                className="rounded-xl border border-border bg-card/50 p-5"
+              >
+                <div className="flex gap-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={authorAvatarUrl(author)}
+                    alt=""
+                    width={56}
+                    height={56}
+                    className="h-14 w-14 shrink-0 rounded-full border border-border/50 bg-muted shadow-sm"
+                  />
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-xl font-semibold tracking-tight">
+                      <Link
+                        href={`/yazar/${author.slug}`}
+                        className="transition-colors hover:text-primary"
+                      >
+                        {author.name}
+                      </Link>
+                    </h3>
+                    <p className="mt-0.5 text-sm font-medium text-primary">
+                      {author.role}
+                    </p>
+                    {author.short_bio ? (
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {item.focus}
+                        {author.short_bio}
                       </p>
-                    </div>
-                  )}
-                </li>
-              );
-            })}
+                    ) : null}
+                  </div>
+                </div>
+              </li>
+            ))}
           </ul>
         </section>
 

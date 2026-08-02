@@ -35,7 +35,7 @@ export const NAV_ITEMS = [
   { href: "/admin/raw-articles", label: "Ham Haberler", icon: "Inbox" },
   { href: "/admin/calendar", label: "Yayın Takvimi", icon: "CalendarDays" },
   { href: "/admin/sources", label: "Kaynaklar", icon: "Rss" },
-  { href: "/admin/authors", label: "Yazar Personaları", icon: "Users" },
+  { href: "/admin/authors", label: "Yazar Profilleri", icon: "Users" },
   { href: "/admin/categories", label: "Kategoriler", icon: "FolderTree" },
   { href: "/admin/tags", label: "Etiketler", icon: "Tags" },
   { href: "/admin/automation", label: "Otomasyon", icon: "Bot" },

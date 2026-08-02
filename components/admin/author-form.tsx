@@ -107,11 +107,11 @@ export function AuthorForm({ mode, author }: AuthorFormProps) {
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="font-sans text-2xl font-semibold tracking-tight">
-          {mode === "create" ? "Yeni yazar personası" : "Personayı düzenle"}
+          {mode === "create" ? "Yeni yazar profili" : "Profili düzenle"}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Bu form gerçek kişi hesabı değil; BYTOK AI editoryal personası
-          oluşturur veya günceller.
+          Public biyografi ile editoryal üretim alanlarını (ton, yazım kuralları,
+          system prompt) birlikte yönetirsiniz.
         </p>
       </div>
 
@@ -120,6 +120,15 @@ export function AuthorForm({ mode, author }: AuthorFormProps) {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-5 rounded-lg border border-border bg-card/40 p-4 sm:p-6"
         >
+          <div className="space-y-1 border-b border-border pb-3">
+            <h2 className="font-sans text-sm font-semibold tracking-tight">
+              Public profil
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Bu alanlar yazar sayfasında ve ana sayfada görünür.
+            </p>
+          </div>
+
           <div className="grid gap-5 sm:grid-cols-2">
             <FormField
               control={form.control}
@@ -179,7 +188,7 @@ export function AuthorForm({ mode, author }: AuthorFormProps) {
                   <Input
                     {...field}
                     disabled={pending}
-                    placeholder="Örn. Teknik / Developer"
+                    placeholder="Örn. Yazılım, Modeller ve Geliştirici Araçları Yazarı"
                   />
                 </FormControl>
                 <FormMessage />
@@ -240,6 +249,51 @@ export function AuthorForm({ mode, author }: AuthorFormProps) {
 
           <FormField
             control={form.control}
+            name="avatar_seed"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Avatar seed</FormLabel>
+                <FormControl>
+                  <Input {...field} disabled={pending} className="font-mono" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-md border border-border px-3 py-3">
+                <div className="space-y-0.5">
+                  <FormLabel>Aktif</FormLabel>
+                  <FormDescription>
+                    Pasif profiller otomatik seçime dahil edilmez.
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={pending}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <div className="space-y-1 border-b border-border pb-3 pt-4">
+            <h2 className="font-sans text-sm font-semibold tracking-tight">
+              Editoryal üretim (yalnızca admin)
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Ton, yazım kuralları ve system prompt public sayfalara taşınmaz.
+            </p>
+          </div>
+
+          <FormField
+            control={form.control}
             name="tone"
             render={({ field }) => (
               <FormItem>
@@ -288,42 +342,6 @@ export function AuthorForm({ mode, author }: AuthorFormProps) {
                   yansıtılmaz.
                 </FormDescription>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="avatar_seed"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Avatar seed</FormLabel>
-                <FormControl>
-                  <Input {...field} disabled={pending} className="font-mono" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="active"
-            render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-md border border-border px-3 py-3">
-                <div className="space-y-0.5">
-                  <FormLabel>Aktif</FormLabel>
-                  <FormDescription>
-                    Pasif personlar otomatik seçime dahil edilmez.
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={pending}
-                  />
-                </FormControl>
               </FormItem>
             )}
           />

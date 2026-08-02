@@ -167,7 +167,7 @@ export async function createAuthor(
     });
 
     revalidateAuthorPaths(created.id, created.slug);
-    return okResult({ id: created.id }, "Yazar personası oluşturuldu");
+    return okResult({ id: created.id }, "Yazar profili oluşturuldu");
   } catch (error) {
     return toActionError(error);
   }
@@ -249,7 +249,7 @@ export async function updateAuthor(
       revalidatePath(`/yazar/${current.slug}`);
     }
 
-    return okResult({ id: parsed.id }, "Yazar personası kaydedildi");
+    return okResult({ id: parsed.id }, "Yazar profili kaydedildi");
   } catch (error) {
     return toActionError(error);
   }
@@ -274,7 +274,7 @@ export async function setAuthorActive(
     if (current.active === activeFlag) {
       return okResult(
         { id: parsed, active: activeFlag },
-        activeFlag ? "Persona zaten aktif" : "Persona zaten pasif",
+        activeFlag ? "Profil zaten aktif" : "Profil zaten pasif",
       );
     }
 
@@ -301,7 +301,7 @@ export async function setAuthorActive(
     revalidateAuthorPaths(parsed, current.slug);
     return okResult(
       { id: parsed, active: activeFlag },
-      activeFlag ? "Persona aktifleştirildi" : "Persona pasifleştirildi",
+      activeFlag ? "Profil aktifleştirildi" : "Profil pasifleştirildi",
     );
   } catch (error) {
     return toActionError(error);
@@ -371,7 +371,7 @@ export async function duplicateAuthor(
     });
 
     revalidateAuthorPaths(created.id, created.slug);
-    return okResult({ id: created.id }, "Persona çoğaltıldı (pasif taslak)");
+    return okResult({ id: created.id }, "Profil çoğaltıldı (pasif taslak)");
   } catch (error) {
     return toActionError(error);
   }
@@ -402,7 +402,7 @@ export async function deleteAuthor(
 
     if ((count ?? 0) > 0) {
       return failResult(
-        `Bu yazara bağlı ${count} haber var. Silmek yerine personayı pasifleştirin.`,
+        `Bu yazara bağlı ${count} haber var. Silmek yerine profili pasifleştirin.`,
       );
     }
 
@@ -422,7 +422,7 @@ export async function deleteAuthor(
     });
 
     revalidateAuthorPaths(undefined, current.slug);
-    return okResult({ id: parsed }, "Yazar personası silindi");
+    return okResult({ id: parsed }, "Yazar profili silindi");
   } catch (error) {
     return toActionError(error);
   }
