@@ -143,11 +143,11 @@ export const DEFAULT_SITE_SETTINGS: PublicSiteSettings = {
   site_name: "BYTOK AI",
   site_description:
     "Yapay zekâ, teknoloji ve dijital dünyanın öne çıkan gelişmeleri. Türkçe, kaynaklı ve bağlamı güçlü haberler.",
-  site_url: "https://bytok.ai",
+  site_url: "https://www.bytokai.com",
   site_tagline: "Yapay zekâ haberleri, kaynaklı ve özgün",
   ai_disclosure_text:
     "Bu içerik yapay zekâ destekli editoryal sistemle hazırlanmıştır. Temel gerçekler belirtilen kaynağa dayanır; metin BYTOK AI tarafından Türkçe ve özgün biçimde yeniden yazılmıştır.",
-  default_og_image: "/og-default.png",
+  default_og_image: "/bytok-ai.png",
   social_links: {
     x: "https://x.com/bytokai",
     linkedin: "https://www.linkedin.com/company/bytok-ai",

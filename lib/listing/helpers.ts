@@ -47,7 +47,7 @@ export function breadcrumbJsonLd(
       {
         "@type": "ListItem",
         position: 1,
-        name: "Ana sayfa",
+        name: "Ana Sayfa",
         item: root,
       },
       ...items.map((item, index) => ({

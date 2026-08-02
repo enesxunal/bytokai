@@ -22,7 +22,7 @@ const CORPORATE_LINKS = [
 const BRAND_LINE =
   "Yapay zekâ ve teknoloji dünyasından kaynaklı Türkçe haberler.";
 
-function isHttpUrl(value: string | undefined): value is string {
+function isHttpUrl(value: string | undefined): boolean {
   if (!value) return false;
   try {
     const url = new URL(value);
@@ -42,6 +42,17 @@ export function SiteFooter({ settings, categories = [] }: SiteFooterProps) {
       ? social.twitter
       : null;
   const linkedinUrl = isHttpUrl(social.linkedin) ? social.linkedin : null;
+  let rssHref = "/rss.xml";
+  const rssRaw = typeof social.rss === "string" ? social.rss.trim() : "";
+  if (rssRaw) {
+    if (rssRaw === "/rss.xml" || rssRaw.endsWith("/rss.xml")) {
+      rssHref = "/rss.xml";
+    } else if (isHttpUrl(rssRaw)) {
+      rssHref = rssRaw;
+    } else if (rssRaw.startsWith("/")) {
+      rssHref = rssRaw;
+    }
+  }
 
   return (
     <footer className="mt-auto border-t border-border bg-card/30">
@@ -119,7 +130,17 @@ export function SiteFooter({ settings, categories = [] }: SiteFooterProps) {
                   </a>
                 </li>
               ) : null}
-              {!xUrl && !linkedinUrl ? (
+              {rssHref ? (
+                <li>
+                  <Link
+                    href={rssHref}
+                    className="inline-flex min-h-10 items-center transition-colors hover:text-primary sm:min-h-0"
+                  >
+                    RSS
+                  </Link>
+                </li>
+              ) : null}
+              {!xUrl && !linkedinUrl && !rssHref ? (
                 <li className="text-foreground/55">Yakında</li>
               ) : null}
             </ul>

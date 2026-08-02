@@ -71,7 +71,7 @@ export default async function AboutPage() {
           <ol className="flex flex-wrap items-center gap-1.5">
             <li>
               <Link href="/" className="transition-colors hover:text-foreground">
-                Ana sayfa
+                Ana Sayfa
               </Link>
             </li>
             <li aria-hidden>/</li>

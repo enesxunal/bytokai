@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getSiteSettings } from "@/lib/database/settings";
-import { absoluteUrl } from "@/lib/listing/helpers";
+import { absolutePublicUrl } from "@/lib/seo/site-url";
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const settings = await getSiteSettings();
@@ -15,7 +15,10 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         disallow: ["/admin/", "/api/", "/arama"],
       },
     ],
-    sitemap: absoluteUrl(base, "/sitemap.xml"),
-    host: base.replace(/^https?:\/\//, ""),
+    sitemap: [
+      absolutePublicUrl(base, "/sitemap.xml"),
+      absolutePublicUrl(base, "/news-sitemap.xml"),
+    ],
+    host: "www.bytokai.com",
   };
 }

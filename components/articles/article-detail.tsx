@@ -10,7 +10,6 @@ import { ShareButtons } from "@/components/shared/share-buttons";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatIstanbul } from "@/lib/utils/date";
-import { cn } from "@/lib/utils/cn";
 
 function formatDate(value: string | null): string | null {
   if (!value) return null;
@@ -31,7 +30,9 @@ function RelatedCard({ article }: { article: DbArticleWithRelations }) {
         <ArticleCoverImage
           src={article.cover_image_url}
           categorySlug={article.category?.slug}
+          alt={article.title}
           sizes="(max-width: 768px) 100vw, 25vw"
+          logoSize="sm"
         />
       </Link>
       <div className="flex flex-1 flex-col gap-2 p-4">
@@ -57,9 +58,26 @@ type ArticleDetailProps = {
   data: ArticlePageData;
 };
 
+function wasMeaningfullyUpdated(
+  publishedAt: string | null,
+  updatedAt: string | null | undefined,
+): boolean {
+  if (!publishedAt || !updatedAt) return false;
+  const published = Date.parse(publishedAt);
+  const updated = Date.parse(updatedAt);
+  if (!Number.isFinite(published) || !Number.isFinite(updated)) return false;
+  return updated - published > 60_000;
+}
+
 export function ArticleDetail({ data }: ArticleDetailProps) {
   const { article, related, bodyHtml, canonicalUrl } = data;
   const publishedLabel = formatDate(article.published_at);
+  const updatedLabel = wasMeaningfullyUpdated(
+    article.published_at,
+    article.updated_at,
+  )
+    ? formatDate(article.updated_at)
+    : null;
   const author = article.author;
 
   return (
@@ -69,7 +87,7 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
           <ol className="flex flex-wrap items-center gap-1.5">
             <li>
               <Link href="/" className="transition-colors hover:text-foreground">
-                Ana sayfa
+                Ana Sayfa
               </Link>
             </li>
             <li aria-hidden>/</li>
@@ -130,6 +148,11 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
                   {publishedLabel}
                 </time>
               ) : null}
+              {updatedLabel ? (
+                <time dateTime={article.updated_at}>
+                  Güncellendi: {updatedLabel}
+                </time>
+              ) : null}
               {article.reading_time_minutes > 0 ? (
                 <span>{article.reading_time_minutes} dk okuma</span>
               ) : null}
@@ -138,11 +161,14 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
           </div>
         </header>
 
-        <div className="relative mt-8 aspect-[21/9] overflow-hidden rounded-2xl border border-border bg-card sm:mt-10">
+        <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl border border-border bg-card sm:mt-10">
           <ArticleCoverImage
             src={article.cover_image_url}
             categorySlug={article.category?.slug}
+            alt={article.title}
             priority
+            logoSize="lg"
+            imageClassName="object-cover object-bottom"
             sizes="(max-width: 768px) 100vw, 768px"
           />
         </div>

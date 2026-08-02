@@ -5,7 +5,7 @@ import { getAllAuthorSlugs } from "@/lib/database/authors";
 import { getAllCategorySlugs } from "@/lib/database/categories";
 import { getSiteSettings } from "@/lib/database/settings";
 import { getAllTagSlugs } from "@/lib/database/tags";
-import { absoluteUrl } from "@/lib/listing/helpers";
+import { absolutePublicUrl } from "@/lib/seo/site-url";
 
 export const revalidate = 3600;
 
@@ -42,14 +42,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((item) => ({
-    url: absoluteUrl(base, item.path),
+    url: absolutePublicUrl(base, item.path),
     lastModified: now,
     changeFrequency: item.changeFrequency,
     priority: item.priority,
   }));
 
   const articleEntries: MetadataRoute.Sitemap = articles.map((article) => ({
-    url: absoluteUrl(base, `/haber/${article.slug}`),
+    url: absolutePublicUrl(base, `/haber/${article.slug}`),
     lastModified:
       toDate(article.updated_at) ?? toDate(article.published_at) ?? now,
     changeFrequency: "weekly",
@@ -57,21 +57,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const categoryEntries: MetadataRoute.Sitemap = categories.map((category) => ({
-    url: absoluteUrl(base, `/kategori/${category.slug}`),
+    url: absolutePublicUrl(base, `/kategori/${category.slug}`),
     lastModified: toDate(category.updated_at) ?? now,
     changeFrequency: "daily",
     priority: 0.7,
   }));
 
   const authorEntries: MetadataRoute.Sitemap = authors.map((author) => ({
-    url: absoluteUrl(base, `/yazar/${author.slug}`),
+    url: absolutePublicUrl(base, `/yazar/${author.slug}`),
     lastModified: toDate(author.updated_at) ?? now,
     changeFrequency: "weekly",
     priority: 0.5,
   }));
 
   const tagEntries: MetadataRoute.Sitemap = tags.map((tag) => ({
-    url: absoluteUrl(base, `/etiket/${tag.slug}`),
+    url: absolutePublicUrl(base, `/etiket/${tag.slug}`),
     lastModified: toDate(tag.created_at) ?? now,
     changeFrequency: "weekly",
     priority: 0.4,

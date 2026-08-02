@@ -11,6 +11,7 @@ import {
   getSiteSettings,
   type PublicSiteSettings,
 } from "@/lib/database/settings";
+import { absolutePublicUrl } from "@/lib/seo/site-url";
 import { resolveArticleBodyHtml } from "@/lib/utils/markdown";
 
 export type ArticlePageData = {
@@ -37,8 +38,10 @@ export const loadArticlePage = cache(async function loadArticlePage(
     content_markdown: article.content_markdown,
   });
 
-  const base = settings.site_url.replace(/\/$/, "");
-  const canonicalUrl = `${base}/haber/${article.slug}`;
+  const canonicalUrl = absolutePublicUrl(
+    settings.site_url,
+    `/haber/${article.slug}`,
+  );
 
   return {
     article,

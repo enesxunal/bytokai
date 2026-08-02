@@ -3,22 +3,15 @@ import { notFound } from "next/navigation";
 
 import { ArticleDetail } from "@/components/articles/article-detail";
 import { loadArticlePage } from "@/lib/articles/load-article-page";
+import { resolveArticleShareImage } from "@/lib/seo/article-media";
+import { absolutePublicUrl } from "@/lib/seo/site-url";
+import { jsonLdScript } from "@/lib/listing/helpers";
 
 export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
-
-function absoluteUrl(base: string, path: string): string {
-  const root = base.replace(/\/$/, "");
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${root}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
-function jsonLdScript(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
-}
 
 export async function generateMetadata({
   params,
@@ -39,9 +32,10 @@ export async function generateMetadata({
     article.seo_description?.trim() ||
     article.excerpt?.trim() ||
     settings.site_description;
-  const ogImage = absoluteUrl(
+  const ogImage = resolveArticleShareImage(
     settings.site_url,
-    article.cover_image_url || settings.default_og_image,
+    article.cover_image_url,
+    settings.default_og_image,
   );
 
   return {
@@ -65,7 +59,7 @@ export async function generateMetadata({
       images: [
         {
           url: ogImage,
-          alt: title,
+          alt: article.title,
         },
       ],
     },
@@ -88,10 +82,14 @@ export default async function ArticlePage({ params }: PageProps) {
 
   const { article, settings, canonicalUrl } = data;
   const siteUrl = settings.site_url.replace(/\/$/, "");
-  const ogImage = absoluteUrl(
+  const ogImage = resolveArticleShareImage(
     settings.site_url,
-    article.cover_image_url || settings.default_og_image,
+    article.cover_image_url,
+    settings.default_og_image,
   );
+  const authorUrl = article.author
+    ? absolutePublicUrl(siteUrl, `/yazar/${article.author.slug}`)
+    : null;
 
   const articleJsonLd = {
     "@context": "https://schema.org",
@@ -109,23 +107,25 @@ export default async function ArticlePage({ params }: PageProps) {
       ? {
           "@type": "Person",
           name: article.author.name,
-          url: `${siteUrl}/yazar/${article.author.slug}`,
+          url: authorUrl,
         }
       : {
           "@type": "Organization",
-          name: settings.site_name,
+          name: "BYTOK AI",
+          url: siteUrl,
         },
     publisher: {
       "@type": "Organization",
-      name: settings.site_name,
+      name: "BYTOK AI",
       url: siteUrl,
       logo: {
         "@type": "ImageObject",
-        url: absoluteUrl(settings.site_url, "/bytok-ai.png"),
+        url: absolutePublicUrl(siteUrl, "/bytok-ai.png"),
       },
     },
     articleSection: article.category?.name,
     keywords: article.tags.map((t) => t.name).join(", ") || undefined,
+    inLanguage: "tr-TR",
     isAccessibleForFree: true,
   };
 
@@ -133,7 +133,7 @@ export default async function ArticlePage({ params }: PageProps) {
     {
       "@type": "ListItem",
       position: 1,
-      name: "Ana sayfa",
+      name: "Ana Sayfa",
       item: siteUrl,
     },
   ];
@@ -143,7 +143,7 @@ export default async function ArticlePage({ params }: PageProps) {
       "@type": "ListItem",
       position: 2,
       name: article.category.name,
-      item: `${siteUrl}/kategori/${article.category.slug}`,
+      item: absolutePublicUrl(siteUrl, `/kategori/${article.category.slug}`),
     });
     breadcrumbItems.push({
       "@type": "ListItem",

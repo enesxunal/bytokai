@@ -340,7 +340,7 @@ ON CONFLICT (id) DO UPDATE SET
 INSERT INTO public.site_settings (key, value) VALUES
   ('site_name', '"BYTOK AI"'::jsonb),
   ('site_description', '"Yapay zekâ odaklı Türkçe teknoloji haber platformu. Kaynaklı, özgün ve otomatik editoryal yayın."'::jsonb),
-  ('site_url', '"https://bytok.ai"'::jsonb),
+  ('site_url', '"https://www.bytokai.com"'::jsonb),
   ('automation_enabled', 'true'::jsonb),
   ('publishing_enabled', 'true'::jsonb),
   ('ingestion_enabled', 'true'::jsonb),

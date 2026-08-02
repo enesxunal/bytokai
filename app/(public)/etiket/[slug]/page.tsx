@@ -110,7 +110,7 @@ export default async function TagPage({ params, searchParams }: PageProps) {
                   href="/"
                   className="transition-colors hover:text-foreground"
                 >
-                  Ana sayfa
+                  Ana Sayfa
                 </Link>
               </li>
               <li aria-hidden>/</li>

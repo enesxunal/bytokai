@@ -18,4 +18,4 @@ export interface SourceAdapter {
 
 export const DEFAULT_FETCH_TIMEOUT_MS = 20_000;
 export const DEFAULT_USER_AGENT =
-  "BYTOK-AI-Bot/1.0 (+https://bytok.ai/kaynaklar; editorial ingestion; respects robots)";
+  "BYTOK-AI-Bot/1.0 (+https://www.bytokai.com/kaynaklar; editorial ingestion; respects robots)";

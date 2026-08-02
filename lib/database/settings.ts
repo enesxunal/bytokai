@@ -7,6 +7,7 @@ import {
   DEFAULT_SITE_SETTINGS,
   type PublicSiteSettings,
 } from "@/lib/database/types";
+import { resolvePublicSiteUrl } from "@/lib/seo/site-url";
 
 export type { PublicSiteSettings } from "@/lib/database/types";
 export { DEFAULT_SITE_SETTINGS } from "@/lib/database/types";
@@ -41,58 +42,76 @@ function asSocial(
 }
 
 async function fetchSiteSettings(): Promise<PublicSiteSettings> {
+  const withResolvedUrl = (
+    settings: PublicSiteSettings,
+    settingsSiteUrl?: string,
+  ): PublicSiteSettings => ({
+    ...settings,
+    site_url: resolvePublicSiteUrl(
+      settingsSiteUrl ?? settings.site_url,
+    ),
+  });
+
   try {
     const supabase = getPublicAnonClient();
-    if (!supabase) return { ...DEFAULT_SITE_SETTINGS };
+    if (!supabase) return withResolvedUrl(DEFAULT_SITE_SETTINGS);
 
-    const { data, error } = await supabase.from("site_settings").select("key, value");
+    const { data, error } = await supabase
+      .from("site_settings")
+      .select("key, value");
 
-    if (error || !data) return { ...DEFAULT_SITE_SETTINGS };
+    if (error || !data) return withResolvedUrl(DEFAULT_SITE_SETTINGS);
 
     const map = new Map<string, unknown>();
     for (const row of data) {
       map.set(row.key, row.value);
     }
 
-    const siteUrl = asString(
+    const settingsSiteUrl = asString(
       map.get("site_url"),
-      process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_SETTINGS.site_url,
+      DEFAULT_SITE_SETTINGS.site_url,
     );
 
-    return {
-      site_name: asString(map.get("site_name"), DEFAULT_SITE_SETTINGS.site_name),
-      site_description: asString(
-        map.get("site_description"),
-        DEFAULT_SITE_SETTINGS.site_description,
-      ),
-      site_url: siteUrl,
-      site_tagline: asString(
-        map.get("site_tagline"),
-        DEFAULT_SITE_SETTINGS.site_tagline,
-      ),
-      ai_disclosure_text: asString(
-        map.get("ai_disclosure_text"),
-        DEFAULT_SITE_SETTINGS.ai_disclosure_text,
-      ),
-      default_og_image: asString(
-        map.get("default_og_image"),
-        DEFAULT_SITE_SETTINGS.default_og_image,
-      ),
-      social_links: asSocial(
-        map.get("social_links"),
-        DEFAULT_SITE_SETTINGS.social_links,
-      ),
-      posts_per_page: asNumber(
-        map.get("posts_per_page"),
-        DEFAULT_SITE_SETTINGS.posts_per_page,
-      ),
-      enable_newsletter: asBoolean(
-        map.get("enable_newsletter"),
-        DEFAULT_SITE_SETTINGS.enable_newsletter,
-      ),
-    };
+    return withResolvedUrl(
+      {
+        site_name: asString(
+          map.get("site_name"),
+          DEFAULT_SITE_SETTINGS.site_name,
+        ),
+        site_description: asString(
+          map.get("site_description"),
+          DEFAULT_SITE_SETTINGS.site_description,
+        ),
+        site_url: settingsSiteUrl,
+        site_tagline: asString(
+          map.get("site_tagline"),
+          DEFAULT_SITE_SETTINGS.site_tagline,
+        ),
+        ai_disclosure_text: asString(
+          map.get("ai_disclosure_text"),
+          DEFAULT_SITE_SETTINGS.ai_disclosure_text,
+        ),
+        default_og_image: asString(
+          map.get("default_og_image"),
+          DEFAULT_SITE_SETTINGS.default_og_image,
+        ),
+        social_links: asSocial(
+          map.get("social_links"),
+          DEFAULT_SITE_SETTINGS.social_links,
+        ),
+        posts_per_page: asNumber(
+          map.get("posts_per_page"),
+          DEFAULT_SITE_SETTINGS.posts_per_page,
+        ),
+        enable_newsletter: asBoolean(
+          map.get("enable_newsletter"),
+          DEFAULT_SITE_SETTINGS.enable_newsletter,
+        ),
+      },
+      settingsSiteUrl,
+    );
   } catch {
-    return { ...DEFAULT_SITE_SETTINGS };
+    return withResolvedUrl(DEFAULT_SITE_SETTINGS);
   }
 }
 

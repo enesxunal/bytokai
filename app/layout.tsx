@@ -15,6 +15,7 @@ const inter = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
+  const siteUrl = settings.site_url.replace(/\/$/, "");
 
   return {
     title: {
@@ -22,9 +23,9 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s · ${settings.site_name}`,
     },
     description: settings.site_description,
-    metadataBase: new URL(settings.site_url),
+    metadataBase: new URL(siteUrl),
     alternates: {
-      canonical: settings.site_url,
+      canonical: siteUrl,
     },
     verification: {
       google: "fEP7CfPu5_wWap1XmsG_rI7I91uKtZk21392QZitnig",
@@ -46,7 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: settings.site_name,
       locale: "tr_TR",
       type: "website",
-      url: settings.site_url,
+      url: siteUrl,
     },
     twitter: {
       card: "summary_large_image",

@@ -455,3 +455,28 @@ export async function getArticlesForRss(
 ): Promise<DbArticleWithRelations[]> {
   return getLatestArticles(limit, 0);
 }
+
+export async function getPublishedArticlesForNewsSitemap(
+  limit = 1000,
+): Promise<Array<{ slug: string; title: string; published_at: string | null }>> {
+  try {
+    const supabase = getPublicAnonClient();
+    if (!supabase) return [];
+
+    const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+    const { data, error } = await supabase
+      .from("articles")
+      .select("slug, title, published_at")
+      .eq("status", "published")
+      .not("published_at", "is", null)
+      .gte("published_at", since)
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(limit);
+
+    if (error || !data) return [];
+    return data;
+  } catch {
+    return [];
+  }
+}
