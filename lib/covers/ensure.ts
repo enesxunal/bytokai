@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { uploadCoverBytes } from "@/lib/admin/cover-image";
+import { brandCoverImageFromUrl } from "@/lib/covers/brand";
 import { generateCoverPng } from "@/lib/covers/generate";
 import { probeImageUrl, scrapeOgImageUrl } from "@/lib/covers/scrape";
 import {
@@ -33,7 +34,6 @@ async function acceptRemoteImage(url: string): Promise<string | null> {
   const ok = await probeImageUrl(httpsUrl);
   if (ok) return httpsUrl;
 
-  // HTTPS başarısızsa orijinal http adayını da dene (bazı CDN'ler).
   if (httpsUrl !== url) {
     const httpOk = await probeImageUrl(url);
     if (httpOk) return url;
@@ -42,22 +42,35 @@ async function acceptRemoteImage(url: string): Promise<string | null> {
   return null;
 }
 
+async function brandAndUpload(
+  supabase: SupabaseClient,
+  remoteUrl: string,
+): Promise<string | null> {
+  const branded = await brandCoverImageFromUrl(remoteUrl);
+  if (!branded) return null;
+  return uploadCoverBytes(supabase, branded, "image/jpeg");
+}
+
 /**
- * Geçerli bir kapak URL'si bulur; yoksa markalı görsel üretip storage'a yükler.
+ * Geçerli bir kapak URL'si bulur; logo damgalayıp storage'a yükler.
+ * Görsel yoksa markalı kapak üretir.
  */
 export async function ensureArticleCover(
   supabase: SupabaseClient,
   input: EnsureCoverInput,
 ): Promise<EnsureCoverResult> {
+  const candidates: Array<{ url: string; source: "original" | "og" }> = [];
+
   const original = input.originalImageUrl?.trim() || null;
   if (original) {
     const accepted = await acceptRemoteImage(original);
     if (accepted) {
-      return { url: accepted, source: "original" };
+      candidates.push({ url: accepted, source: "original" });
+    } else {
+      logger.info("Orijinal kapak geçersiz, alternatif aranıyor", {
+        url: original.slice(0, 180),
+      });
     }
-    logger.info("Orijinal kapak geçersiz, alternatif aranıyor", {
-      url: original.slice(0, 180),
-    });
   }
 
   if (input.sourceUrl?.trim()) {
@@ -65,9 +78,19 @@ export async function ensureArticleCover(
     if (og) {
       const accepted = await acceptRemoteImage(og);
       if (accepted) {
-        return { url: accepted, source: "og" };
+        candidates.push({ url: accepted, source: "og" });
       }
     }
+  }
+
+  for (const candidate of candidates) {
+    const uploaded = await brandAndUpload(supabase, candidate.url);
+    if (uploaded) {
+      return { url: uploaded, source: candidate.source };
+    }
+    logger.warn("Kapak damgalanamadı, sonraki adaya geçiliyor", {
+      source: candidate.source,
+    });
   }
 
   try {

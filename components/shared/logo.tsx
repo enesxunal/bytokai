@@ -46,15 +46,32 @@ export function Logo({
   const width = Math.round(height * LOGO_ASPECT);
 
   const content = wordmark ? (
-    <Image
-      src="/bytok-ai.png"
-      alt="BYTOK AI"
-      width={width}
-      height={height}
-      className={cn(imageClass[size], "object-contain object-left", className)}
-      priority={priority}
-      sizes="(max-width: 640px) 122px, 145px"
-    />
+    <span className={cn("relative inline-flex items-center", className)}>
+      {/* Light theme: dark wordmark */}
+      <Image
+        src="/bytok-ai-on-light.png"
+        alt="BYTOK AI"
+        width={width}
+        height={height}
+        className={cn(imageClass[size], "object-contain object-left dark:hidden")}
+        priority={priority}
+        sizes="(max-width: 640px) 122px, 145px"
+      />
+      {/* Dark theme: white wordmark */}
+      <Image
+        src="/bytok-ai-on-dark.png"
+        alt=""
+        aria-hidden
+        width={width}
+        height={height}
+        className={cn(
+          imageClass[size],
+          "hidden object-contain object-left dark:block",
+        )}
+        priority={priority}
+        sizes="(max-width: 640px) 122px, 145px"
+      />
+    </span>
   ) : (
     <span
       className={cn(

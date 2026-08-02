@@ -1,5 +1,8 @@
 import "server-only";
 
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
 import { ImageResponse } from "next/og";
 
 import { categoryCoverPalette } from "@/lib/covers/validate";
@@ -8,6 +11,17 @@ function truncate(text: string, max: number): string {
   const trimmed = text.trim().replace(/\s+/g, " ");
   if (trimmed.length <= max) return trimmed;
   return `${trimmed.slice(0, max - 1).trimEnd()}…`;
+}
+
+async function logoDataUrl(): Promise<string | null> {
+  try {
+    const bytes = await readFile(
+      path.join(process.cwd(), "public", "bytok-ai-on-dark.png"),
+    );
+    return `data:image/png;base64,${bytes.toString("base64")}`;
+  } catch {
+    return null;
+  }
 }
 
 /** Başlık + kategoriye göre markalı PNG kapak üretir. */
@@ -20,6 +34,7 @@ export async function generateCoverPng(options: {
   const label = options.categoryName?.trim() || palette.label;
   const title = truncate(options.title || "BYTOK AI", 110);
   const titleSize = title.length > 70 ? 48 : 56;
+  const logoSrc = await logoDataUrl();
 
   const response = new ImageResponse(
     (
@@ -40,23 +55,47 @@ export async function generateCoverPng(options: {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 12,
-            fontSize: 28,
-            fontWeight: 600,
-            letterSpacing: "0.04em",
-            textTransform: "uppercase",
-            opacity: 0.92,
+            justifyContent: "space-between",
+            width: "100%",
           }}
         >
+          {logoSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoSrc}
+              width={320}
+              height={84}
+              alt=""
+              style={{ objectFit: "contain" }}
+            />
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                fontSize: 28,
+                fontWeight: 600,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+                opacity: 0.92,
+              }}
+            >
+              BYTOK AI
+            </div>
+          )}
           <div
             style={{
-              width: 14,
-              height: 14,
-              borderRadius: 999,
-              background: "#ffffff",
+              display: "flex",
+              fontSize: 22,
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              opacity: 0.85,
             }}
-          />
-          {`BYTOK AI · ${label}`}
+          >
+            {label}
+          </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div
