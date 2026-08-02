@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch, type Control } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 
 import {
-  updateArticle,
-  type UpdateArticleInput,
+  createArticle,
+  type CreateArticleInput,
 } from "@/app/admin/(protected)/articles/actions";
 import { CoverImageField } from "@/components/admin/cover-image-field";
 import { Button } from "@/components/ui/button";
@@ -27,14 +27,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ARTICLE_STATUS_LABELS } from "@/lib/admin/labels";
-import type {
-  AdminArticleFilterOptions,
-  AdminArticleWithRelations,
-} from "@/lib/admin/articles";
+import type { AdminArticleFilterOptions } from "@/lib/admin/articles";
 import type { DbArticleStatus } from "@/lib/database/types";
 import {
   istanbulDatetimeLocalToUtcIso,
-  utcIsoToIstanbulDatetimeLocal,
 } from "@/lib/utils/date";
 import { markdownToSafeHtml } from "@/lib/utils/markdown";
 import { slugifyTurkish } from "@/lib/utils/slug";
@@ -44,13 +40,10 @@ const STATUS_OPTIONS: DbArticleStatus[] = [
   "needs_review",
   "scheduled",
   "published",
-  "archived",
-  "failed",
 ];
 
-const editFormSchema = z
+const createFormSchema = z
   .object({
-    id: z.string().uuid(),
     title: z.string().trim().min(1, "Başlık gerekli").max(300),
     slug: z
       .string()
@@ -71,14 +64,7 @@ const editFormSchema = z
     seoDescription: z.string().trim().max(320),
     featured: z.boolean(),
     breaking: z.boolean(),
-    status: z.enum([
-      "draft",
-      "needs_review",
-      "scheduled",
-      "published",
-      "archived",
-      "failed",
-    ]),
+    status: z.enum(["draft", "needs_review", "scheduled", "published"]),
     scheduledAtLocal: z.string().trim().max(32),
     sourceName: z.string().trim().max(200),
     sourceUrl: z.string().trim().max(2000),
@@ -122,34 +108,12 @@ const editFormSchema = z
     }
   });
 
-type EditFormValues = z.infer<typeof editFormSchema>;
-
-function toDefaults(article: AdminArticleWithRelations): EditFormValues {
-  return {
-    id: article.id,
-    title: article.title,
-    slug: article.slug,
-    excerpt: article.excerpt,
-    contentMarkdown: article.content_markdown,
-    categoryId: article.category_id ?? "",
-    authorId: article.author_id ?? "",
-    tags: article.tags.map((tag) => tag.name).join(", "),
-    coverImageUrl: article.cover_image_url ?? "",
-    seoTitle: article.seo_title ?? "",
-    seoDescription: article.seo_description ?? "",
-    featured: article.featured,
-    breaking: article.breaking,
-    status: article.status,
-    scheduledAtLocal: utcIsoToIstanbulDatetimeLocal(article.scheduled_at),
-    sourceName: article.source_name ?? "",
-    sourceUrl: article.source_url ?? "",
-  };
-}
+type CreateFormValues = z.infer<typeof createFormSchema>;
 
 function LiveMarkdownPreview({
   control,
 }: {
-  control: Control<EditFormValues>;
+  control: Control<CreateFormValues>;
 }) {
   const contentMarkdown = useWatch({ control, name: "contentMarkdown" }) ?? "";
   let previewHtml = "";
@@ -180,40 +144,49 @@ function LiveMarkdownPreview({
   );
 }
 
-export function ArticleEditForm({
-  article,
+export function ArticleCreateForm({
   options,
 }: {
-  article: AdminArticleWithRelations;
   options: AdminArticleFilterOptions;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [slugTouched, setSlugTouched] = useState(false);
-  const defaults = useMemo(() => toDefaults(article), [article]);
 
-  const form = useForm<EditFormValues>({
-    resolver: zodResolver(editFormSchema),
-    defaultValues: defaults,
+  const form = useForm<CreateFormValues>({
+    resolver: zodResolver(createFormSchema),
+    defaultValues: {
+      title: "",
+      slug: "",
+      excerpt: "",
+      contentMarkdown: "",
+      categoryId: "",
+      authorId: "",
+      tags: "",
+      coverImageUrl: "",
+      seoTitle: "",
+      seoDescription: "",
+      featured: false,
+      breaking: false,
+      status: "draft",
+      scheduledAtLocal: "",
+      sourceName: "",
+      sourceUrl: "",
+    },
   });
 
-  function onSubmit(values: EditFormValues) {
-    if (!form.formState.isDirty) {
-      toast.message("Değişiklik yok");
-      return;
-    }
-
-    const payload: UpdateArticleInput = {
+  function onSubmit(values: CreateFormValues) {
+    const payload: CreateArticleInput = {
       ...values,
       categoryId: values.categoryId || "",
       authorId: values.authorId || "",
     };
 
     startTransition(async () => {
-      const result = await updateArticle(payload);
+      const result = await createArticle(payload);
       if (result.ok) {
-        toast.success(result.message ?? "Haber kaydedildi");
-        form.reset(values);
+        toast.success(result.message ?? "Haber oluşturuldu");
+        router.push(`/admin/articles/${result.data.id}`);
         router.refresh();
         return;
       }
@@ -221,7 +194,7 @@ export function ArticleEditForm({
       if (result.fieldErrors) {
         for (const [key, messages] of Object.entries(result.fieldErrors)) {
           if (key in values) {
-            form.setError(key as keyof EditFormValues, {
+            form.setError(key as keyof CreateFormValues, {
               message: messages[0],
             });
           }
@@ -236,20 +209,15 @@ export function ArticleEditForm({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <h1 className="font-sans text-2xl font-semibold tracking-tight">
-            Haberi düzenle
+            Yeni haber
           </h1>
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {article.title}
+          <p className="text-sm text-muted-foreground">
+            Manuel haber oluşturun. Kapak görselini önerilen ölçüde yükleyin.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/admin/articles/${article.id}`}>Detaya dön</Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/articles">Liste</Link>
-          </Button>
-        </div>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/articles">Listeye dön</Link>
+        </Button>
       </div>
 
       <Form {...form}>
@@ -298,7 +266,7 @@ export function ArticleEditForm({
                       }}
                     />
                   </FormControl>
-                  <FormDescription>Manuel değiştirilebilir.</FormDescription>
+                  <FormDescription>URL’de kullanılacak kısa ad.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -445,13 +413,7 @@ export function ArticleEditForm({
                   <FormControl>
                     <CoverImageField
                       value={field.value}
-                      onChange={(url) => {
-                        field.onChange(url);
-                        form.setValue("coverImageUrl", url, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                      }}
+                      onChange={field.onChange}
                       disabled={pending}
                       error={form.formState.errors.coverImageUrl?.message}
                     />
@@ -473,7 +435,7 @@ export function ArticleEditForm({
                     />
                   </FormControl>
                   <FormDescription>
-                    Veritabanında UTC olarak saklanır.
+                    Durum “Planlandı” ise bu alan zorunlu.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -576,18 +538,10 @@ export function ArticleEditForm({
 
           <div className="flex flex-wrap gap-2">
             <Button type="submit" disabled={pending}>
-              {pending ? "Kaydediliyor…" : "Kaydet"}
+              {pending ? "Oluşturuluyor…" : "Haberi oluştur"}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={pending}
-              onClick={() => {
-                form.reset(defaults);
-                setSlugTouched(false);
-              }}
-            >
-              Sıfırla
+            <Button variant="outline" asChild>
+              <Link href="/admin/articles">İptal</Link>
             </Button>
           </div>
         </form>

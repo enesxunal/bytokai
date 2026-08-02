@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 
@@ -123,6 +124,25 @@ export function RawArticleDetailView({
               </MetaRow>
               <MetaRow label="Bulunma">
                 {formatDate(article.discovered_at)}
+              </MetaRow>
+              <MetaRow label="Görsel">
+                {article.original_image_url ? (
+                  <div className="space-y-2">
+                    <div className="relative aspect-[16/9] max-w-sm overflow-hidden rounded-md border border-border">
+                      <Image
+                        src={article.original_image_url}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="384px"
+                        unoptimized
+                      />
+                    </div>
+                    <ExternalUrl href={article.original_image_url} />
+                  </div>
+                ) : (
+                  "—"
+                )}
               </MetaRow>
             </dl>
           </CardContent>

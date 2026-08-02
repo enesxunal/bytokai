@@ -10,6 +10,7 @@ import {
   type ActionResult,
 } from "@/lib/admin/action-result";
 import { writeAuditLog } from "@/lib/admin/audit";
+import { uploadCoverImageFile } from "@/lib/admin/cover-image";
 import { istanbulDatetimeLocalToUtcIso } from "@/lib/utils/date";
 import { requireAdminAction } from "@/lib/auth/session";
 import type { DbArticle, DbArticleStatus } from "@/lib/database/types";
@@ -105,6 +106,10 @@ const updateArticleSchema = z
   });
 
 export type UpdateArticleInput = z.infer<typeof updateArticleSchema>;
+
+const createArticleSchema = updateArticleSchema.omit({ id: true });
+
+export type CreateArticleInput = z.infer<typeof createArticleSchema>;
 
 function dbFail(action: string, reason: string): ActionResult<never> {
   logger.error("Haber işlemi başarısız", { action, reason });
@@ -260,6 +265,125 @@ function nullableId(value: string | null | undefined): string | null {
 
 function valuesEqual(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
+}
+
+export async function uploadArticleCover(
+  formData: FormData,
+): Promise<ActionResult<{ url: string; path: string }>> {
+  try {
+    const { supabase } = await requireAdminAction();
+    const file = formData.get("file");
+    if (!(file instanceof File)) {
+      return failResult("Görsel dosyası gerekli");
+    }
+    return await uploadCoverImageFile(supabase, file);
+  } catch (error) {
+    return toActionError(error);
+  }
+}
+
+export async function createArticle(
+  input: CreateArticleInput,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const parsed = createArticleSchema.parse(input);
+    const { user, supabase } = await requireAdminAction();
+
+    const { data: slugConflict } = await supabase
+      .from("articles")
+      .select("id")
+      .eq("slug", parsed.slug)
+      .maybeSingle();
+
+    if (slugConflict) {
+      return failResult("Bu slug başka bir haberde kullanılıyor", {
+        slug: ["Bu slug başka bir haberde kullanılıyor"],
+      });
+    }
+
+    const categoryId = nullableId(parsed.categoryId ?? null);
+    const authorId = nullableId(parsed.authorId ?? null);
+    const coverImageUrl = parsed.coverImageUrl.trim() || null;
+    const seoTitle = parsed.seoTitle.trim() || null;
+    const seoDescription = parsed.seoDescription.trim() || null;
+    const sourceName = parsed.sourceName.trim() || null;
+    const sourceUrl = parsed.sourceUrl.trim() || null;
+    const tagNames = parseTagNames(parsed.tags);
+
+    let scheduledAt: string | null = null;
+    let publishedAt: string | null = null;
+
+    if (parsed.status === "scheduled") {
+      scheduledAt = istanbulDatetimeLocalToUtcIso(parsed.scheduledAtLocal);
+      publishedAt = null;
+    } else if (parsed.status === "published") {
+      scheduledAt = null;
+      publishedAt = new Date().toISOString();
+    } else if (parsed.scheduledAtLocal) {
+      scheduledAt = istanbulDatetimeLocalToUtcIso(parsed.scheduledAtLocal);
+    }
+
+    const contentHtml = markdownToSafeHtml(parsed.contentMarkdown);
+    const readingTime = calculateReadingTime(parsed.contentMarkdown);
+
+    const { data, error } = await supabase
+      .from("articles")
+      .insert({
+        title: parsed.title,
+        slug: parsed.slug,
+        excerpt: parsed.excerpt,
+        content_markdown: parsed.contentMarkdown,
+        content_html: contentHtml,
+        category_id: categoryId,
+        author_id: authorId,
+        cover_image_url: coverImageUrl,
+        seo_title: seoTitle,
+        seo_description: seoDescription,
+        featured: parsed.featured,
+        breaking: parsed.breaking,
+        status: parsed.status,
+        scheduled_at: scheduledAt,
+        published_at: publishedAt,
+        source_name: sourceName,
+        source_url: sourceUrl,
+        reading_time_minutes: readingTime,
+        ai_generated: false,
+        raw_article_id: null,
+      })
+      .select("*")
+      .single();
+
+    if (error || !data) {
+      return dbFail("create", error?.message ?? "insert failed");
+    }
+
+    const article = data as DbArticle;
+
+    try {
+      await syncArticleTags(supabase, article.id, tagNames);
+    } catch (tagError) {
+      const message =
+        tagError instanceof Error ? tagError.message : "tag sync failed";
+      return dbFail("create.tags", message);
+    }
+
+    await writeAuditLog(supabase, {
+      actorId: user.id,
+      action: "article.create",
+      entityType: "article",
+      entityId: article.id,
+      beforeData: null,
+      afterData: {
+        ...snapshotArticle(article),
+        tags: tagNames,
+      },
+    });
+
+    revalidateArticlePaths(article.id, article.slug);
+    return okResult({ id: article.id }, "Haber oluşturuldu");
+  } catch (error) {
+    return toActionError(error);
+  }
 }
 
 export async function publishArticleNow(

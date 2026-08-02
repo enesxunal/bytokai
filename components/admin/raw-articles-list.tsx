@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Database } from "lucide-react";
+import { Database, Plus } from "lucide-react";
 
 import { RawArticleActions } from "@/components/admin/raw-article-actions";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -218,19 +218,27 @@ export function RawArticlesListView({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="font-sans text-2xl font-semibold tracking-tight">
-          Ham Haberler
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Kaynaklardan bulunan ham kayıtları inceleyin ve pipeline durumunu
-          yönetin.
-          {!connected ? (
-            <span className="mt-1 block text-warning">
-              Veritabanı bağlantısı yok; liste güvenli boş durumda.
-            </span>
-          ) : null}
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="font-sans text-2xl font-semibold tracking-tight">
+            Ham Haberler
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Kaynaklardan bulunan ham kayıtları inceleyin ve pipeline durumunu
+            yönetin.
+            {!connected ? (
+              <span className="mt-1 block text-warning">
+                Veritabanı bağlantısı yok; liste güvenli boş durumda.
+              </span>
+            ) : null}
+          </p>
+        </div>
+        <Button size="sm" asChild>
+          <Link href="/admin/raw-articles/new">
+            <Plus className="size-3.5" aria-hidden />
+            Yeni ham haber
+          </Link>
+        </Button>
       </div>
 
       <RawFilters data={data} />
@@ -244,11 +252,16 @@ export function RawArticlesListView({
       ) : result.items.length === 0 ? (
         <EmptyState
           title="Ham haber bulunamadı"
-          description="Filtrelere uyan kayıt yok. Filtreleri temizleyerek tekrar deneyin."
+          description="Filtrelere uyan kayıt yok. Filtreleri temizleyerek tekrar deneyin veya yeni ham haber ekleyin."
           action={
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/admin/raw-articles">Filtreleri temizle</Link>
-            </Button>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/admin/raw-articles">Filtreleri temizle</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/admin/raw-articles/new">Yeni ham haber</Link>
+              </Button>
+            </div>
           }
         />
       ) : (

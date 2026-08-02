@@ -452,6 +452,18 @@ export async function loadAdminArticleEditorData(id: string): Promise<{
   return { connected, article, options };
 }
 
+export async function loadAdminArticleCreateData(): Promise<{
+  connected: boolean;
+  options: AdminArticleFilterOptions;
+}> {
+  if (!hasSupabaseEnv()) {
+    return { connected: false, options: EMPTY_OPTIONS };
+  }
+
+  const options = await loadFilterOptions();
+  return { connected: true, options };
+}
+
 export function formatRiskFlags(riskFlags: unknown): string[] {
   if (!Array.isArray(riskFlags)) return [];
   return riskFlags

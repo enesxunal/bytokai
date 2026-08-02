@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import {
@@ -15,12 +16,45 @@ import {
   RAW_QUEUE_STATUS,
 } from "@/lib/admin/raw-articles";
 import { requireAdminAction } from "@/lib/auth/session";
+import { getClientEnvSoft } from "@/lib/env";
 import type { DbRawArticleStatus } from "@/lib/database/types";
+import { contentHash } from "@/lib/utils/hash";
 import { createLogger } from "@/lib/utils/logger";
+import { normalizeCanonicalUrl } from "@/lib/utils/url";
 
 const logger = createLogger("admin.raw-article-actions");
 
 const uuidSchema = z.string().uuid("Geçersiz ham haber kimliği");
+
+const createRawArticleSchema = z.object({
+  sourceId: z.string().uuid("Kaynak seçin"),
+  originalTitle: z.string().trim().min(1, "Başlık gerekli").max(500),
+  originalUrl: z
+    .string()
+    .trim()
+    .max(2000)
+    .refine(
+      (value) => !value || /^https?:\/\//i.test(value),
+      "URL http:// veya https:// ile başlamalı",
+    ),
+  originalExcerpt: z.string().trim().max(4000),
+  originalAuthor: z.string().trim().max(200),
+  rawContent: z.string().trim().max(200_000),
+  originalImageUrl: z
+    .string()
+    .trim()
+    .max(2000)
+    .refine(
+      (value) =>
+        !value ||
+        value.startsWith("/") ||
+        /^https?:\/\//i.test(value),
+      "Görsel URL geçerli olmalı",
+    ),
+  queueForProcessing: z.boolean(),
+});
+
+export type CreateRawArticleInput = z.infer<typeof createRawArticleSchema>;
 
 type RawArticleRow = {
   id: string;
@@ -69,6 +103,122 @@ async function fetchRaw(
 
   if (error) return { article: null, error: error.message };
   return { article: (data as RawArticleRow | null) ?? null, error: null };
+}
+
+export async function createRawArticle(
+  input: CreateRawArticleInput,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const parsed = createRawArticleSchema.parse(input);
+    const { user, supabase } = await requireAdminAction();
+
+    const { data: source, error: sourceError } = await supabase
+      .from("sources")
+      .select("id, name")
+      .eq("id", parsed.sourceId)
+      .maybeSingle();
+
+    if (sourceError) {
+      return dbFail("create.source", sourceError.message);
+    }
+    if (!source) {
+      return failResult("Seçilen kaynak bulunamadı", {
+        sourceId: ["Seçilen kaynak bulunamadı"],
+      });
+    }
+
+    const id = randomUUID();
+    let originalUrl = parsed.originalUrl.trim();
+    if (!originalUrl) {
+      const siteUrl = getClientEnvSoft().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+      originalUrl = `${siteUrl}/manual/${id}`;
+    }
+
+    let canonicalUrl: string;
+    try {
+      canonicalUrl = normalizeCanonicalUrl(originalUrl);
+    } catch {
+      return failResult("Geçerli bir kaynak URL girin", {
+        originalUrl: ["Geçerli bir kaynak URL girin"],
+      });
+    }
+
+    const { data: urlConflict } = await supabase
+      .from("raw_articles")
+      .select("id")
+      .eq("canonical_url", canonicalUrl)
+      .maybeSingle();
+
+    if (urlConflict) {
+      return failResult("Bu URL ile kayıtlı bir ham haber zaten var", {
+        originalUrl: ["Bu URL ile kayıtlı bir ham haber zaten var"],
+      });
+    }
+
+    const hashSource =
+      parsed.rawContent.trim() ||
+      parsed.originalExcerpt.trim() ||
+      parsed.originalTitle;
+    const status: DbRawArticleStatus = parsed.queueForProcessing
+      ? RAW_QUEUE_STATUS
+      : "skipped";
+
+    const { data, error } = await supabase
+      .from("raw_articles")
+      .insert({
+        id,
+        source_id: parsed.sourceId,
+        external_id: `manual:${id}`,
+        original_url: originalUrl,
+        canonical_url: canonicalUrl,
+        original_title: parsed.originalTitle,
+        original_excerpt: parsed.originalExcerpt.trim() || null,
+        original_author: parsed.originalAuthor.trim() || null,
+        original_image_url: parsed.originalImageUrl.trim() || null,
+        raw_content: parsed.rawContent.trim() || null,
+        content_hash: contentHash(hashSource),
+        status,
+        raw_payload: {
+          origin: "admin_manual",
+          created_by: user.id,
+        },
+      })
+      .select(
+        "id, status, failure_count, last_error, processed_at, original_title, source_id",
+      )
+      .single();
+
+    if (error || !data) {
+      const code = (error as { code?: string } | null)?.code;
+      if (code === "23505" || /duplicate|unique/i.test(error?.message ?? "")) {
+        return failResult(
+          "Bu ham haber zaten kayıtlı (yinelenen URL veya kimlik)",
+        );
+      }
+      return dbFail("create", error?.message ?? "insert failed");
+    }
+
+    const row = data as RawArticleRow;
+
+    await writeAuditLog(supabase, {
+      actorId: user.id,
+      action: "raw_article.create",
+      entityType: "raw_article",
+      entityId: row.id,
+      beforeData: null,
+      afterData: snapshot(row),
+    });
+
+    revalidateRawPaths(row.id);
+    return okResult(
+      { id: row.id },
+      parsed.queueForProcessing
+        ? "Ham haber oluşturuldu ve işlem kuyruğuna alındı"
+        : "Ham haber oluşturuldu (kuyruğa alınmadı)",
+    );
+  } catch (error) {
+    return toActionError(error);
+  }
 }
 
 /**

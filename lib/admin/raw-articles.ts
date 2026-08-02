@@ -479,3 +479,15 @@ export async function getAdminRawArticleById(
     return { connected: false, article: null };
   }
 }
+
+export async function loadAdminRawArticleCreateData(): Promise<{
+  connected: boolean;
+  options: AdminRawArticleFilterOptions;
+}> {
+  if (!hasSupabaseEnv()) {
+    return { connected: false, options: EMPTY_OPTIONS };
+  }
+
+  const options = await loadSourceOptions();
+  return { connected: true, options };
+}
