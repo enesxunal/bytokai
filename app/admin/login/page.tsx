@@ -43,7 +43,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
           <p className="font-[family-name:var(--font-ibm-plex-mono)] text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
             BYTOK AI
           </p>
-          <h1 className="font-[family-name:var(--font-source-serif)] text-3xl font-semibold tracking-tight">
+          <h1 className="font-[family-name:var(--font-inter)] text-3xl font-semibold tracking-tight">
             {resetMode ? "Yeni şifre belirle" : "Admin girişi"}
           </h1>
           <p className="text-sm text-muted-foreground">

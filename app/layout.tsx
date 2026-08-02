@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
+import { IBM_Plex_Mono, Inter } from "next/font/google";
 import { headers } from "next/headers";
 
 import { BookPublishingCta } from "@/components/book-submissions/book-publishing-cta";
@@ -12,17 +12,9 @@ import { getSiteSettings } from "@/lib/database/settings";
 
 import "./globals.css";
 
-const ibmPlexSans = IBM_Plex_Sans({
-  variable: "--font-ibm-plex-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "600", "700"],
   display: "swap",
 });
 
@@ -89,7 +81,7 @@ export default async function RootLayout({
       <html
         lang="tr"
         suppressHydrationWarning
-        className={`${ibmPlexSans.variable} ${sourceSerif.variable} ${ibmPlexMono.variable} h-full`}
+        className={`${inter.variable} ${ibmPlexMono.variable} h-full`}
       >
         <body className="flex min-h-full flex-col bg-mesh">
           <ThemeProvider>
@@ -110,7 +102,7 @@ export default async function RootLayout({
     <html
       lang="tr"
       suppressHydrationWarning
-      className={`${ibmPlexSans.variable} ${sourceSerif.variable} ${ibmPlexMono.variable} h-full`}
+      className={`${inter.variable} ${ibmPlexMono.variable} h-full`}
     >
       <body className="flex min-h-full flex-col bg-mesh">
         <ThemeProvider>
