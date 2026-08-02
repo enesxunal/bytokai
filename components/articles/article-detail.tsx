@@ -1,10 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 
 import type { ArticlePageData } from "@/lib/articles/load-article-page";
 import { authorAvatarUrl } from "@/lib/database/authors";
 import type { DbArticleWithRelations } from "@/lib/database/types";
+import { ArticleCoverImage } from "@/components/articles/article-cover";
 import { Container } from "@/components/shared/container";
 import { ShareButtons } from "@/components/shared/share-buttons";
 import { Badge } from "@/components/ui/badge";
@@ -21,31 +21,6 @@ function formatDate(value: string | null): string | null {
   }
 }
 
-function CoverFallback({
-  categorySlug,
-  className,
-}: {
-  categorySlug?: string | null;
-  className?: string;
-}) {
-  const coverClass =
-    categorySlug === "yapay-zeka" ? "bg-cover-yapay-zeka" : "bg-cover-default";
-
-  return (
-    <div
-      className={cn(
-        "relative flex h-full w-full items-end overflow-hidden p-6",
-        coverClass,
-        className,
-      )}
-      aria-hidden
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(255_255_255/0.14),transparent_50%)]" />
-      <div className="relative h-1 w-20 rounded-full bg-white/75" />
-    </div>
-  );
-}
-
 function RelatedCard({ article }: { article: DbArticleWithRelations }) {
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
@@ -53,17 +28,11 @@ function RelatedCard({ article }: { article: DbArticleWithRelations }) {
         href={`/haber/${article.slug}`}
         className="relative aspect-[16/10] overflow-hidden"
       >
-        {article.cover_image_url ? (
-          <Image
-            src={article.cover_image_url}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 25vw"
-          />
-        ) : (
-          <CoverFallback categorySlug={article.category?.slug} />
-        )}
+        <ArticleCoverImage
+          src={article.cover_image_url}
+          categorySlug={article.category?.slug}
+          sizes="(max-width: 768px) 100vw, 25vw"
+        />
       </Link>
       <div className="flex flex-1 flex-col gap-2 p-4">
         {article.category ? (
@@ -170,18 +139,12 @@ export function ArticleDetail({ data }: ArticleDetailProps) {
         </header>
 
         <div className="relative mt-8 aspect-[21/9] overflow-hidden rounded-2xl border border-border bg-card sm:mt-10">
-          {article.cover_image_url ? (
-            <Image
-              src={article.cover_image_url}
-              alt=""
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 768px"
-            />
-          ) : (
-            <CoverFallback categorySlug={article.category?.slug} />
-          )}
+          <ArticleCoverImage
+            src={article.cover_image_url}
+            categorySlug={article.category?.slug}
+            priority
+            sizes="(max-width: 768px) 100vw, 768px"
+          />
         </div>
 
         {bodyHtml ? (

@@ -32,6 +32,10 @@ import {
   DEFAULT_MIN_GAP_MINUTES,
   DEFAULT_MAX_PER_HOUR,
 } from "@/lib/publishing/scheduler";
+import {
+  ensureArticleCover,
+  needsCoverRepair,
+} from "@/lib/covers/ensure";
 import type { Author, NormalizedSourceItem } from "@/types";
 
 const logger = createLogger("cron.jobs");
@@ -544,6 +548,14 @@ async function processOneRaw(
     const contentHtml = markdownToSafeHtml(generated.article.contentMarkdown);
     const readingTime = calculateReadingTime(generated.article.contentMarkdown);
 
+    const cover = await ensureArticleCover(ctx.supabase, {
+      title: generated.article.title,
+      sourceUrl: raw.original_url,
+      originalImageUrl: raw.original_image_url,
+      categorySlug: category?.slug,
+      categoryName: category?.name,
+    });
+
     let articleStatus: "scheduled" | "needs_review" = "scheduled";
     let scheduledAt: string | null = null;
 
@@ -588,7 +600,7 @@ async function processOneRaw(
         excerpt: generated.article.excerpt,
         content_markdown: generated.article.contentMarkdown,
         content_html: contentHtml,
-        cover_image_url: raw.original_image_url,
+        cover_image_url: cover.url,
         source_name: sourceName,
         source_url: raw.original_url,
         source_published_at: raw.original_published_at,
@@ -996,6 +1008,59 @@ export async function runMaintenanceJob(
           .select("id");
         if (error) throw new Error(error.message);
         return data?.length ?? 0;
+      },
+    },
+    {
+      name: "repair_covers",
+      run: async () => {
+        const { data: rows, error } = await ctx.supabase
+          .from("articles")
+          .select(
+            "id, title, cover_image_url, source_url, category:categories(slug, name)",
+          )
+          .in("status", ["published", "scheduled", "needs_review"])
+          .order("updated_at", { ascending: false })
+          .limit(40);
+
+        if (error) throw new Error(error.message);
+
+        let fixed = 0;
+        for (const row of rows ?? []) {
+          if (!needsCoverRepair(row.cover_image_url as string | null)) {
+            continue;
+          }
+
+          const category = row.category as
+            | { slug?: string; name?: string }
+            | { slug?: string; name?: string }[]
+            | null;
+          const cat = Array.isArray(category) ? category[0] : category;
+
+          const cover = await ensureArticleCover(ctx.supabase, {
+            title: row.title as string,
+            sourceUrl: (row.source_url as string | null) ?? null,
+            originalImageUrl: (row.cover_image_url as string | null) ?? null,
+            categorySlug: cat?.slug ?? null,
+            categoryName: cat?.name ?? null,
+          });
+
+          if (!cover.url || cover.url === row.cover_image_url) continue;
+
+          const { error: updateError } = await ctx.supabase
+            .from("articles")
+            .update({ cover_image_url: cover.url })
+            .eq("id", row.id);
+
+          if (!updateError) {
+            fixed += 1;
+          }
+        }
+
+        if (fixed > 0) {
+          revalidatePath("/");
+        }
+
+        return fixed;
       },
     },
     {

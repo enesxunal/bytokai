@@ -2,11 +2,11 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import type { ActionResult } from "@/lib/admin/action-result";
 import { failResult, okResult } from "@/lib/admin/action-result";
-import {
-  COVER_IMAGE_GUIDANCE,
-} from "@/lib/admin/cover-image-constants";
+import { COVER_IMAGE_GUIDANCE } from "@/lib/admin/cover-image-constants";
 import { createLogger } from "@/lib/utils/logger";
 import type { createClient } from "@/lib/supabase/server";
 
@@ -51,6 +51,47 @@ function buildStoragePath(mime: string): string {
 }
 
 type AdminSupabase = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * Ham baytları public bucket'a yükler ve herkese açık URL döner.
+ */
+export async function uploadCoverBytes(
+  supabase: SupabaseClient,
+  bytes: Buffer,
+  mime: string,
+): Promise<string | null> {
+  if (!ALLOWED_MIME.has(mime)) {
+    logger.warn("Desteklenmeyen kapak mime", { mime });
+    return null;
+  }
+
+  if (bytes.byteLength <= 0 || bytes.byteLength > COVER_IMAGE_GUIDANCE.maxBytes) {
+    logger.warn("Kapak boyutu geçersiz", { size: bytes.byteLength });
+    return null;
+  }
+
+  const path = buildStoragePath(mime);
+  const { error: uploadError } = await supabase.storage
+    .from(ARTICLE_COVER_BUCKET)
+    .upload(path, bytes, {
+      contentType: mime,
+      upsert: false,
+      cacheControl: "31536000",
+    });
+
+  if (uploadError) {
+    logger.error("Kapak görseli yükleme başarısız", {
+      reason: uploadError.message,
+    });
+    return null;
+  }
+
+  const { data } = supabase.storage
+    .from(ARTICLE_COVER_BUCKET)
+    .getPublicUrl(path);
+
+  return data?.publicUrl ?? null;
+}
 
 /**
  * Kapak görselini public bucket'a yükler ve herkese açık URL döner.

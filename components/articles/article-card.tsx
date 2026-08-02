@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { ArticleCoverImage } from "@/components/articles/article-cover";
 import { Badge } from "@/components/ui/badge";
 import type { DbArticleWithRelations } from "@/lib/database/types";
 import { formatIstanbul } from "@/lib/utils/date";
@@ -13,53 +13,6 @@ function formatDate(value: string | null): string | null {
   } catch {
     return null;
   }
-}
-
-function CoverPlaceholder({
-  categorySlug,
-  className,
-}: {
-  categorySlug?: string | null;
-  className?: string;
-}) {
-  const coverClass =
-    categorySlug === "yapay-zeka" ? "bg-cover-yapay-zeka" : "bg-cover-default";
-
-  return (
-    <div
-      className={cn(
-        "relative flex h-full w-full items-end overflow-hidden p-4",
-        coverClass,
-        className,
-      )}
-      aria-hidden
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(255_255_255/0.1),transparent_45%)]" />
-      <div className="relative h-1 w-16 rounded-full bg-white/70" />
-    </div>
-  );
-}
-
-function ArticleCover({
-  article,
-  className,
-}: {
-  article: DbArticleWithRelations;
-  className?: string;
-}) {
-  if (article.cover_image_url) {
-    return (
-      <Image
-        src={article.cover_image_url}
-        alt=""
-        fill
-        className={cn("object-cover", className)}
-        sizes="(max-width: 768px) 100vw, 33vw"
-      />
-    );
-  }
-
-  return <CoverPlaceholder categorySlug={article.category?.slug} />;
 }
 
 function MetaRow({ article }: { article: DbArticleWithRelations }) {
@@ -104,7 +57,10 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
         tabIndex={-1}
         aria-hidden
       >
-        <ArticleCover article={article} />
+        <ArticleCoverImage
+          src={article.cover_image_url}
+          categorySlug={article.category?.slug}
+        />
       </Link>
       <div className="flex flex-1 flex-col gap-2.5 p-4 sm:p-5">
         <MetaRow article={article} />

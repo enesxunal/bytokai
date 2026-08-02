@@ -1,8 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Newspaper } from "lucide-react";
 
+import {
+  ArticleCoverImage,
+} from "@/components/articles/article-cover";
 import { Container } from "@/components/shared/container";
 import { EmptyState } from "@/components/shared/empty-state";
 import { NewsletterForm } from "@/components/shared/newsletter-form";
@@ -56,31 +58,6 @@ function formatDate(value: string | null): string | null {
   }
 }
 
-function CoverPlaceholder({
-  categorySlug,
-  className,
-}: {
-  categorySlug?: string | null;
-  className?: string;
-}) {
-  const coverClass =
-    categorySlug === "yapay-zeka" ? "bg-cover-yapay-zeka" : "bg-cover-default";
-
-  return (
-    <div
-      className={cn(
-        "relative flex h-full w-full items-end overflow-hidden p-4",
-        coverClass,
-        className,
-      )}
-      aria-hidden
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(255_255_255/0.1),transparent_45%)]" />
-      <div className="relative h-1 w-16 rounded-full bg-white/70" />
-    </div>
-  );
-}
-
 function ArticleCover({
   article,
   className,
@@ -92,20 +69,15 @@ function ArticleCover({
   priority?: boolean;
   sizes?: string;
 }) {
-  if (article.cover_image_url) {
-    return (
-      <Image
-        src={article.cover_image_url}
-        alt=""
-        fill
-        priority={priority}
-        className={cn("object-cover", className)}
-        sizes={sizes}
-      />
-    );
-  }
-
-  return <CoverPlaceholder categorySlug={article.category?.slug} />;
+  return (
+    <ArticleCoverImage
+      src={article.cover_image_url}
+      categorySlug={article.category?.slug}
+      className={className}
+      priority={priority}
+      sizes={sizes}
+    />
+  );
 }
 
 function MetaRow({
@@ -149,32 +121,16 @@ function MetaRow({
 }
 
 function FeaturedLead({ article }: { article: DbArticleWithRelations }) {
-  const hasImage = Boolean(article.cover_image_url);
-
   return (
     <article className="group relative h-full min-h-[280px] overflow-hidden rounded-2xl border border-border/80 bg-card sm:min-h-[320px] lg:min-h-0">
       <Link href={`/haber/${article.slug}`} className="absolute inset-0 block">
         <span className="sr-only">{article.title}</span>
-        {hasImage ? (
-          <ArticleCover
-            article={article}
-            priority
-            sizes="(max-width: 1024px) 100vw, 60vw"
-          />
-        ) : (
-          <CoverPlaceholder
-            categorySlug={article.category?.slug}
-            className="absolute inset-0"
-          />
-        )}
-        <div
-          className={cn(
-            "absolute inset-0",
-            hasImage
-              ? "bg-gradient-to-t from-black/85 via-black/45 to-black/15"
-              : "bg-gradient-to-t from-black/55 via-black/20 to-transparent",
-          )}
+        <ArticleCover
+          article={article}
+          priority
+          sizes="(max-width: 1024px) 100vw, 60vw"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
       </Link>
       <div className="pointer-events-none relative z-10 flex h-full min-h-[280px] flex-col justify-end space-y-3 p-5 sm:min-h-[320px] sm:p-7 lg:min-h-full lg:p-8">
         <MetaRow article={article} light />

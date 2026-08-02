@@ -213,6 +213,22 @@
     background-image: var(--cover-yapay-zeka);
   }
 
+  .bg-cover-yazilim {
+    background-image: var(--cover-yazilim);
+  }
+
+  .bg-cover-girisim {
+    background-image: var(--cover-girisim);
+  }
+
+  .bg-cover-donanim {
+    background-image: var(--cover-donanim);
+  }
+
+  .bg-cover-politika {
+    background-image: var(--cover-politika);
+  }
+
   .bg-mesh {
     background-color: var(--background);
     background-image:

@@ -34,29 +34,51 @@ const parser = new Parser({
   },
 });
 
+import { isLikelyCoverImageUrl } from "@/lib/covers/validate";
+
+function mediaUrl(
+  entry:
+    | { $?: { url?: string; type?: string; medium?: string } }
+    | undefined,
+): string | undefined {
+  const url = entry?.$?.url?.trim();
+  if (!url) return undefined;
+  const type = entry?.$?.type?.toLowerCase() ?? "";
+  const medium = entry?.$?.medium?.toLowerCase() ?? "";
+  if (type.startsWith("video/") || medium === "video") return undefined;
+  if (type && !type.startsWith("image/") && medium && medium !== "image") {
+    return undefined;
+  }
+  return isLikelyCoverImageUrl(url) ? url : undefined;
+}
+
 function pickImage(item: RssItem & Record<string, unknown>): string | undefined {
-  const enclosure = item.enclosure?.url;
-  if (enclosure) return enclosure;
+  const enclosure = item.enclosure as
+    | { url?: string; type?: string }
+    | undefined;
+  if (enclosure?.url && isLikelyCoverImageUrl(enclosure.url)) {
+    const type = enclosure.type?.toLowerCase() ?? "";
+    if (!type.startsWith("video/")) return enclosure.url;
+  }
 
   const mediaContent = item["media:content"] as
-    | { $?: { url?: string } }
-    | Array<{ $?: { url?: string } }>
+    | { $?: { url?: string; type?: string; medium?: string } }
+    | Array<{ $?: { url?: string; type?: string; medium?: string } }>
     | undefined;
-  if (Array.isArray(mediaContent) && mediaContent[0]?.$?.url) {
-    return mediaContent[0].$.url;
-  }
-  if (mediaContent && !Array.isArray(mediaContent) && mediaContent.$?.url) {
-    return mediaContent.$.url;
+  if (Array.isArray(mediaContent)) {
+    for (const entry of mediaContent) {
+      const url = mediaUrl(entry);
+      if (url) return url;
+    }
+  } else {
+    const url = mediaUrl(mediaContent);
+    if (url) return url;
   }
 
   const mediaThumb = item["media:thumbnail"] as
-    | { $?: { url?: string } }
+    | { $?: { url?: string; type?: string; medium?: string } }
     | undefined;
-  if (mediaThumb?.$?.url) {
-    return mediaThumb.$.url;
-  }
-
-  return undefined;
+  return mediaUrl(mediaThumb);
 }
 
 export function mapRssItemToNormalized(
