@@ -22,7 +22,26 @@ export const getCategories = cache(async function getCategories(): Promise<
       .order("sort_order", { ascending: true });
 
     if (error || !data) return [];
-    return data as DbCategory[];
+
+    const categories = data as DbCategory[];
+    if (categories.length === 0) return [];
+
+    const withPublished = await Promise.all(
+      categories.map(async (category) => {
+        const { count, error: countError } = await supabase
+          .from("articles")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "published")
+          .eq("category_id", category.id);
+
+        if (countError || !count || count < 1) return null;
+        return category;
+      }),
+    );
+
+    return withPublished.filter((category): category is DbCategory =>
+      Boolean(category),
+    );
   } catch {
     return [];
   }
