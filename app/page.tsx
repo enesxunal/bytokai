@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Newspaper } from "lucide-react";
 
 import { Container } from "@/components/shared/container";
@@ -8,15 +9,43 @@ import { NewsletterForm } from "@/components/shared/newsletter-form";
 import { Badge } from "@/components/ui/badge";
 import { authorAvatarUrl } from "@/lib/database/authors";
 import type { DbArticleWithRelations, DbAuthor } from "@/lib/database/types";
+import { getSiteSettings } from "@/lib/database/settings";
 import {
   loadHomePageData,
   type HomeCategorySection,
 } from "@/lib/home/load-home";
+import { absoluteUrl, jsonLdScript } from "@/lib/listing/helpers";
 import { formatIstanbul } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/cn";
 
 /** Shared public homepage cache window; publish cron revalidates `/`. */
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const canonical = absoluteUrl(settings.site_url, "/");
+
+  return {
+    title: {
+      absolute: `${settings.site_name} · ${settings.site_tagline}`,
+    },
+    description: settings.site_description,
+    alternates: { canonical },
+    openGraph: {
+      title: settings.site_name,
+      description: settings.site_description,
+      url: canonical,
+      siteName: settings.site_name,
+      locale: "tr_TR",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.site_name,
+      description: settings.site_description,
+    },
+  };
+}
 
 function formatDate(value: string | null): string | null {
   if (!value) return null;
@@ -392,9 +421,41 @@ function NewsletterSection({ enabled }: { enabled: boolean }) {
 
 export default async function HomePage() {
   const data = await loadHomePageData();
+  const siteUrl = data.settings.site_url.replace(/\/$/, "");
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${siteUrl}/#organization`,
+        name: data.settings.site_name,
+        url: siteUrl,
+        description: data.settings.site_description,
+        logo: absoluteUrl(siteUrl, "/icon.png"),
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        url: siteUrl,
+        name: data.settings.site_name,
+        description: data.settings.site_description,
+        publisher: { "@id": `${siteUrl}/#organization` },
+        inLanguage: "tr-TR",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${siteUrl}/arama?q={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
+  };
 
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(structuredData) }}
+      />
       <Container className="space-y-12 py-7 sm:space-y-14 sm:py-10 lg:space-y-16">
         {!data.hasAnyArticles ? (
           <EmptyState

@@ -43,8 +43,22 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: settings.site_description,
     metadataBase: new URL(settings.site_url),
+    alternates: {
+      canonical: settings.site_url,
+    },
     verification: {
       google: "fEP7CfPu5_wWap1XmsG_rI7I91uKtZk21392QZitnig",
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
     },
     openGraph: {
       title: settings.site_name,
@@ -52,6 +66,12 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: settings.site_name,
       locale: "tr_TR",
       type: "website",
+      url: settings.site_url,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.site_name,
+      description: settings.site_description,
     },
   };
 }
