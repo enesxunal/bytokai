@@ -1020,60 +1020,73 @@ export async function runMaintenanceJob(
     {
       name: "repair_covers",
       run: async () => {
-        const { data: rows, error } = await ctx.supabase
-          .from("articles")
-          .select(
-            "id, title, cover_image_url, source_url, slug, category:categories(slug, name)",
-          )
-          .in("status", ["published", "scheduled", "needs_review"])
-          .order("updated_at", { ascending: false })
-          .limit(80);
+        let fixedTotal = 0;
 
-        if (error) throw new Error(error.message);
-
-        let fixed = 0;
-        for (const row of rows ?? []) {
-          const currentUrl = row.cover_image_url as string | null;
-          if (!needsCoverBranding(currentUrl)) {
-            continue;
-          }
-
-          const category = row.category as
-            | { slug?: string; name?: string }
-            | { slug?: string; name?: string }[]
-            | null;
-          const cat = Array.isArray(category) ? category[0] : category;
-
-          const cover = await ensureArticleCover(ctx.supabase, {
-            title: row.title as string,
-            sourceUrl: (row.source_url as string | null) ?? null,
-            originalImageUrl: needsCoverRepair(currentUrl) ? null : currentUrl,
-            categorySlug: cat?.slug ?? null,
-            categoryName: cat?.name ?? null,
-          });
-
-          if (!cover.url || cover.url === currentUrl) continue;
-
-          const { error: updateError } = await ctx.supabase
+        // Multiple batches so one maintenance run can backfill more than a
+        // single page of articles before the cron time budget is spent.
+        for (let batch = 0; batch < 8; batch += 1) {
+          const { data: rows, error } = await ctx.supabase
             .from("articles")
-            .update({ cover_image_url: cover.url })
-            .eq("id", row.id);
+            .select(
+              "id, title, cover_image_url, source_url, slug, category:categories(slug, name)",
+            )
+            .in("status", ["published", "scheduled", "needs_review"])
+            .or(
+              "cover_image_url.is.null,cover_image_url.not.ilike.%/storage/v1/object/public/article-covers/%",
+            )
+            .order("published_at", { ascending: false, nullsFirst: false })
+            .limit(25);
 
-          if (!updateError) {
-            fixed += 1;
-            const slug = row.slug as string | undefined;
-            if (slug) {
-              revalidatePath(`/haber/${slug}`);
+          if (error) throw new Error(error.message);
+          if (!rows?.length) break;
+
+          let batchFixed = 0;
+          for (const row of rows) {
+            const currentUrl = row.cover_image_url as string | null;
+            if (!needsCoverBranding(currentUrl)) {
+              continue;
+            }
+
+            const category = row.category as
+              | { slug?: string; name?: string }
+              | { slug?: string; name?: string }[]
+              | null;
+            const cat = Array.isArray(category) ? category[0] : category;
+
+            const cover = await ensureArticleCover(ctx.supabase, {
+              title: row.title as string,
+              sourceUrl: (row.source_url as string | null) ?? null,
+              originalImageUrl: needsCoverRepair(currentUrl) ? null : currentUrl,
+              categorySlug: cat?.slug ?? null,
+              categoryName: cat?.name ?? null,
+            });
+
+            if (!cover.url || cover.url === currentUrl) continue;
+
+            const { error: updateError } = await ctx.supabase
+              .from("articles")
+              .update({ cover_image_url: cover.url })
+              .eq("id", row.id);
+
+            if (!updateError) {
+              batchFixed += 1;
+              const slug = row.slug as string | undefined;
+              if (slug) {
+                revalidatePath(`/haber/${slug}`);
+              }
             }
           }
+
+          fixedTotal += batchFixed;
+          if (batchFixed === 0) break;
         }
 
-        if (fixed > 0) {
+        if (fixedTotal > 0) {
           revalidatePath("/");
           revalidatePath("/sitemap.xml");
         }
 
-        return fixed;
+        return fixedTotal;
       },
     },
     {
@@ -1091,13 +1104,18 @@ export async function runMaintenanceJob(
     },
   ];
 
+  const stepResults: Record<string, number | string> = {};
+
   for (const step of steps) {
     processed += 1;
     try {
-      await step.run();
+      const count = await step.run();
       succeeded += 1;
+      stepResults[step.name] = count;
     } catch (error) {
       failed += 1;
+      stepResults[step.name] =
+        error instanceof Error ? error.message : String(error);
       logger.warn("Maintenance adımı başarısız", {
         step: step.name,
         reason: error instanceof Error ? error.message : String(error),
@@ -1112,8 +1130,8 @@ export async function runMaintenanceJob(
     skipped: 0,
     message:
       failed === 0
-        ? "Bakım tamamlandı"
+        ? `Bakım tamamlandı (kapak: ${stepResults.repair_covers ?? 0})`
         : `Bakım kısmi: ${succeeded}/${processed} adım`,
-    metadata: { retentionDays },
+    metadata: { retentionDays, steps: stepResults },
   };
 }
