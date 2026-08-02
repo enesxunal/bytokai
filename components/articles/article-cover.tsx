@@ -3,7 +3,10 @@
 import Image from "next/image";
 import { useState } from "react";
 
-import { coverClassForCategory } from "@/lib/covers/validate";
+import {
+  coverClassForCategory,
+  isLikelyCoverImageUrl,
+} from "@/lib/covers/validate";
 import { cn } from "@/lib/utils/cn";
 
 type ArticleCoverImageProps = {
@@ -50,8 +53,9 @@ export function ArticleCoverImage({
   priority = false,
   sizes = "(max-width: 768px) 100vw, 33vw",
 }: ArticleCoverImageProps) {
+  const usableSrc = isLikelyCoverImageUrl(src) ? src : null;
   const [failed, setFailed] = useState(false);
-  const showImage = Boolean(src) && !failed;
+  const showImage = Boolean(usableSrc) && !failed;
 
   if (!showImage) {
     return (
@@ -61,7 +65,7 @@ export function ArticleCoverImage({
 
   return (
     <Image
-      src={src!}
+      src={usableSrc!}
       alt={alt}
       fill
       priority={priority}
