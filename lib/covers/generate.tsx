@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { ImageResponse } from "next/og";
+import sharp from "sharp";
 
 import { categoryCoverPalette } from "@/lib/covers/validate";
 
@@ -18,7 +19,18 @@ async function logoDataUrl(): Promise<string | null> {
     const bytes = await readFile(
       path.join(process.cwd(), "public", "bytok-ai-on-dark.png"),
     );
-    return `data:image/png;base64,${bytes.toString("base64")}`;
+    const meta = await sharp(bytes).metadata();
+    const height = meta.height ?? 420;
+    const cropped = await sharp(bytes)
+      .extract({
+        left: 0,
+        top: 0,
+        width: meta.width ?? 1600,
+        height: Math.max(1, Math.round(height * 0.78)),
+      })
+      .png()
+      .toBuffer();
+    return `data:image/png;base64,${cropped.toString("base64")}`;
   } catch {
     return null;
   }
@@ -63,10 +75,10 @@ export async function generateCoverPng(options: {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={logoSrc}
-              width={320}
-              height={84}
+              width={300}
+              height={72}
               alt=""
-              style={{ objectFit: "contain" }}
+              style={{ objectFit: "contain", objectPosition: "left center" }}
             />
           ) : (
             <div

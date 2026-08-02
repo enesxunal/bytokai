@@ -12,6 +12,11 @@ import {
   updateArticle,
   type UpdateArticleInput,
 } from "@/app/admin/(protected)/articles/actions";
+import {
+  EditorialLivePreview,
+  EditorialMarkdownEditor,
+  EditorialTitleInput,
+} from "@/components/admin/article-editorial-fields";
 import { CoverImageField } from "@/components/admin/cover-image-field";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +41,6 @@ import {
   istanbulDatetimeLocalToUtcIso,
   utcIsoToIstanbulDatetimeLocal,
 } from "@/lib/utils/date";
-import { markdownToSafeHtml } from "@/lib/utils/markdown";
 import { slugifyTurkish } from "@/lib/utils/slug";
 
 const STATUS_OPTIONS: DbArticleStatus[] = [
@@ -146,37 +150,21 @@ function toDefaults(article: AdminArticleWithRelations): EditFormValues {
   };
 }
 
-function LiveMarkdownPreview({
+function EditLivePreview({
   control,
 }: {
   control: Control<EditFormValues>;
 }) {
+  const title = useWatch({ control, name: "title" }) ?? "";
+  const excerpt = useWatch({ control, name: "excerpt" }) ?? "";
   const contentMarkdown = useWatch({ control, name: "contentMarkdown" }) ?? "";
-  let previewHtml = "";
-  if (contentMarkdown.trim()) {
-    try {
-      previewHtml = markdownToSafeHtml(contentMarkdown);
-    } catch {
-      previewHtml = "";
-    }
-  }
 
   return (
-    <div className="space-y-2">
-      <p className="text-sm font-medium">Canlı önizleme</p>
-      <div className="min-h-[20rem] overflow-auto rounded-md border border-border bg-card/40 p-4">
-        {previewHtml ? (
-          <div
-            className="prose prose-sm dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: previewHtml }}
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Önizleme için Markdown yazın.
-          </p>
-        )}
-      </div>
-    </div>
+    <EditorialLivePreview
+      title={title}
+      excerpt={excerpt}
+      contentMarkdown={contentMarkdown}
+    />
   );
 }
 
@@ -254,56 +242,56 @@ export function ArticleEditForm({
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Başlık</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={pending}
-                      onChange={(event) => {
-                        field.onChange(event);
-                        if (!slugTouched) {
-                          form.setValue(
-                            "slug",
-                            slugifyTurkish(event.target.value) || "haber",
-                            { shouldDirty: true },
-                          );
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Başlık</FormLabel>
+                <FormControl>
+                  <EditorialTitleInput
+                    value={field.value}
+                    disabled={pending}
+                    name={field.name}
+                    onBlur={field.onBlur}
+                    onChange={(next) => {
+                      field.onChange(next);
+                      if (!slugTouched) {
+                        form.setValue(
+                          "slug",
+                          slugifyTurkish(next) || "haber",
+                          { shouldDirty: true },
+                        );
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={pending}
-                      onChange={(event) => {
-                        setSlugTouched(true);
-                        field.onChange(event);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>Manuel değiştirilebilir.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Slug</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled={pending}
+                    onChange={(event) => {
+                      setSlugTouched(true);
+                      field.onChange(event);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>Manuel değiştirilebilir.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
@@ -312,8 +300,17 @@ export function ArticleEditForm({
               <FormItem>
                 <FormLabel>Spot</FormLabel>
                 <FormControl>
-                  <Textarea {...field} rows={3} disabled={pending} />
+                  <Textarea
+                    {...field}
+                    rows={3}
+                    disabled={pending}
+                    placeholder="Başlığın altındaki kısa giriş metni…"
+                    className="text-base leading-relaxed"
+                  />
                 </FormControl>
+                <FormDescription>
+                  Okuyucunun ilk gördüğü özet cümle. Ana başlık değildir.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -325,20 +322,21 @@ export function ArticleEditForm({
               name="contentMarkdown"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Markdown içerik</FormLabel>
+                  <FormLabel>İçerik</FormLabel>
                   <FormControl>
-                    <Textarea
-                      {...field}
-                      rows={18}
+                    <EditorialMarkdownEditor
+                      value={field.value}
                       disabled={pending}
-                      className="font-mono text-xs"
+                      name={field.name}
+                      onBlur={field.onBlur}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <LiveMarkdownPreview control={form.control} />
+            <EditLivePreview control={form.control} />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

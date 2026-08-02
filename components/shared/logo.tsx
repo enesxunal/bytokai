@@ -17,22 +17,22 @@ type LogoProps = {
 const LOGO_ASPECT = 1600 / 420;
 
 const imageHeights = {
-  sm: 30,
-  md: 36,
-  lg: 40,
+  sm: 34,
+  md: 46,
+  lg: 52,
 } as const;
 
 const textSizes = {
-  sm: "text-lg",
-  md: "text-2xl",
-  lg: "text-3xl",
+  sm: "text-xl",
+  md: "text-3xl",
+  lg: "text-4xl",
 } as const;
 
-/** CSS heights: mobile ~30–34px, desktop ~34–40px */
+/** CSS heights: mobile ~40px, desktop ~46–48px */
 const imageClass = {
-  sm: "h-[30px] w-auto",
-  md: "h-[32px] w-auto sm:h-[36px] lg:h-[38px]",
-  lg: "h-[36px] w-auto sm:h-[40px]",
+  sm: "h-[34px] w-auto",
+  md: "h-[40px] w-auto sm:h-[44px] lg:h-[48px]",
+  lg: "h-[44px] w-auto sm:h-[48px] lg:h-[52px]",
 } as const;
 
 export function Logo({
@@ -55,7 +55,7 @@ export function Logo({
         height={height}
         className={cn(imageClass[size], "object-contain object-left dark:hidden")}
         priority={priority}
-        sizes="(max-width: 640px) 122px, 145px"
+        sizes="(max-width: 640px) 152px, 183px"
       />
       {/* Dark theme: white wordmark */}
       <Image
@@ -69,7 +69,7 @@ export function Logo({
           "hidden object-contain object-left dark:block",
         )}
         priority={priority}
-        sizes="(max-width: 640px) 122px, 145px"
+        sizes="(max-width: 640px) 152px, 183px"
       />
     </span>
   ) : (

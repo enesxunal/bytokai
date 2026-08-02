@@ -63,11 +63,15 @@ function ArticleCover({
   className,
   priority = false,
   sizes = "(max-width: 768px) 100vw, 33vw",
+  showLogo = true,
+  logoSize = "md",
 }: {
   article: DbArticleWithRelations;
   className?: string;
   priority?: boolean;
   sizes?: string;
+  showLogo?: boolean;
+  logoSize?: "sm" | "md" | "lg";
 }) {
   return (
     <ArticleCoverImage
@@ -76,6 +80,8 @@ function ArticleCover({
       className={className}
       priority={priority}
       sizes={sizes}
+      showLogo={showLogo}
+      logoSize={logoSize}
     />
   );
 }
@@ -83,15 +89,17 @@ function ArticleCover({
 function MetaRow({
   article,
   light = false,
+  compact = false,
 }: {
   article: DbArticleWithRelations;
   light?: boolean;
+  compact?: boolean;
 }) {
   const date = formatDate(article.published_at);
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-x-2 gap-y-1 text-xs",
+        "flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-snug",
         light ? "text-white/80" : "text-foreground/65",
       )}
     >
@@ -110,7 +118,7 @@ function MetaRow({
       {date ? (
         <time dateTime={article.published_at ?? undefined}>{date}</time>
       ) : null}
-      {article.reading_time_minutes > 0 ? (
+      {!compact && article.reading_time_minutes > 0 ? (
         <>
           <span aria-hidden>·</span>
           <span>{article.reading_time_minutes} dk okuma</span>
@@ -122,28 +130,29 @@ function MetaRow({
 
 function FeaturedLead({ article }: { article: DbArticleWithRelations }) {
   return (
-    <article className="group relative h-full min-h-[280px] overflow-hidden rounded-2xl border border-border/80 bg-card sm:min-h-[320px] lg:min-h-0">
+    <article className="group relative h-full min-h-[240px] overflow-hidden rounded-xl border border-border/80 bg-card sm:min-h-[300px] sm:rounded-2xl lg:min-h-0">
       <Link href={`/haber/${article.slug}`} className="absolute inset-0 block">
         <span className="sr-only">{article.title}</span>
         <ArticleCover
           article={article}
           priority
           sizes="(max-width: 1024px) 100vw, 60vw"
+          showLogo={false}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/50 to-black/20" />
       </Link>
-      <div className="pointer-events-none relative z-10 flex h-full min-h-[280px] flex-col justify-end space-y-3 p-5 sm:min-h-[320px] sm:p-7 lg:min-h-full lg:p-8">
-        <MetaRow article={article} light />
-        <h2 className="max-w-[22ch] font-serif text-[34px] font-semibold leading-[1.15] tracking-tight text-white sm:text-[40px] lg:text-[48px] xl:text-[52px]">
+      <div className="pointer-events-none relative z-10 flex h-full min-h-[240px] flex-col justify-end gap-2 p-4 sm:min-h-[300px] sm:gap-2.5 sm:p-6 lg:min-h-full lg:p-7">
+        <MetaRow article={article} light compact />
+        <h1 className="max-w-[28ch] font-serif text-[1.375rem] font-semibold leading-snug tracking-tight text-white sm:text-[1.75rem] lg:text-[2rem] xl:text-[2.125rem]">
           <Link
             href={`/haber/${article.slug}`}
             className="pointer-events-auto transition-colors hover:text-white/90"
           >
             {article.title}
           </Link>
-        </h2>
+        </h1>
         {article.excerpt ? (
-          <p className="max-w-2xl text-sm leading-relaxed text-white/85 line-clamp-3 sm:text-base sm:line-clamp-2">
+          <p className="hidden max-w-2xl text-[0.9375rem] leading-relaxed text-white/80 line-clamp-2 sm:block">
             {article.excerpt}
           </p>
         ) : null}
@@ -154,28 +163,29 @@ function FeaturedLead({ article }: { article: DbArticleWithRelations }) {
 
 function FeaturedSideCard({ article }: { article: DbArticleWithRelations }) {
   return (
-    <article className="group flex flex-1 gap-3.5 border-b border-border/80 py-3.5 last:border-b-0 last:pb-0 first:pt-0">
+    <article className="group flex flex-1 gap-3 border-b border-border/80 py-3 last:border-b-0 last:pb-0 first:pt-0 sm:gap-3.5 sm:py-3.5">
       <Link
         href={`/haber/${article.slug}`}
-        className="relative hidden aspect-[4/3] w-[5.5rem] shrink-0 overflow-hidden rounded-md sm:block"
+        className="relative aspect-[4/3] w-[4.5rem] shrink-0 overflow-hidden rounded-md sm:w-[5.5rem]"
         aria-hidden
         tabIndex={-1}
       >
         <ArticleCover
           article={article}
           sizes="88px"
+          showLogo={false}
         />
       </Link>
-      <div className="min-w-0 flex-1 space-y-1.5 self-center">
-        <MetaRow article={article} />
-        <h3 className="font-serif text-base font-semibold leading-snug tracking-tight line-clamp-2 sm:text-[1.05rem]">
+      <div className="min-w-0 flex-1 space-y-1 self-center">
+        <MetaRow article={article} compact />
+        <h2 className="font-serif text-[0.9375rem] font-semibold leading-snug tracking-tight line-clamp-2 sm:text-base">
           <Link
             href={`/haber/${article.slug}`}
             className="transition-colors hover:text-primary"
           >
             {article.title}
           </Link>
-        </h3>
+        </h2>
       </div>
     </article>
   );
@@ -195,9 +205,9 @@ function ArticleCard({ article }: { article: DbArticleWithRelations }) {
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       </Link>
-      <div className="flex flex-1 flex-col gap-2.5 p-4 sm:p-5">
-        <MetaRow article={article} />
-        <h3 className="font-serif text-lg font-semibold leading-snug tracking-tight line-clamp-2 sm:text-xl">
+      <div className="flex flex-1 flex-col gap-2 p-3.5 sm:gap-2.5 sm:p-5">
+        <MetaRow article={article} compact />
+        <h3 className="font-serif text-base font-semibold leading-snug tracking-tight line-clamp-2 sm:text-lg">
           <Link
             href={`/haber/${article.slug}`}
             className="transition-colors hover:text-primary"
@@ -206,7 +216,7 @@ function ArticleCard({ article }: { article: DbArticleWithRelations }) {
           </Link>
         </h3>
         {article.excerpt ? (
-          <p className="line-clamp-2 text-sm leading-relaxed text-foreground/70">
+          <p className="hidden line-clamp-2 text-[0.9375rem] leading-relaxed text-foreground/70 sm:block">
             {article.excerpt}
           </p>
         ) : null}
@@ -225,13 +235,15 @@ function SectionHeading({
   description?: string;
 }) {
   return (
-    <div className="mb-5 flex flex-col gap-2 border-b border-border/70 pb-3.5 sm:mb-6 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-4 flex flex-col gap-1.5 border-b border-border/70 pb-3 sm:mb-5 sm:flex-row sm:items-end sm:justify-between sm:pb-3.5">
       <div>
-        <h2 className="font-serif text-2xl font-semibold tracking-tight sm:text-[1.75rem]">
+        <h2 className="font-serif text-xl font-semibold tracking-tight sm:text-2xl">
           {title}
         </h2>
         {description ? (
-          <p className="mt-1 text-sm text-foreground/65">{description}</p>
+          <p className="mt-0.5 text-[0.8125rem] text-foreground/60 sm:mt-1 sm:text-sm">
+            {description}
+          </p>
         ) : null}
       </div>
       {href ? (
@@ -247,31 +259,20 @@ function SectionHeading({
 }
 
 function CategorySectionBlock({ section }: { section: HomeCategorySection }) {
-  const title = section.category?.name ?? sectionTitleFallback(section.slug);
+  const title = section.category?.name ?? section.slug;
   const description = section.category?.description ?? undefined;
   const href = `/kategori/${section.slug}`;
 
   return (
     <section id={section.slug} className="scroll-mt-24">
       <SectionHeading title={title} href={href} description={description} />
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         {section.articles.map((article) => (
           <ArticleCard key={article.id} article={article} />
         ))}
       </div>
     </section>
   );
-}
-
-function sectionTitleFallback(slug: string): string {
-  const map: Record<string, string> = {
-    "yapay-zeka": "Yapay Zekâ",
-    gelistirici: "Geliştirici",
-    "is-dunyasi": "İş Dünyası",
-    arastirma: "Araştırma",
-    yorum: "Yorum",
-  };
-  return map[slug] ?? slug;
 }
 
 function AuthorsSection({ authors }: { authors: DbAuthor[] }) {
@@ -348,11 +349,11 @@ function NewsletterSection({ enabled }: { enabled: boolean }) {
           <div className="space-y-3">
             <h2
               id="bulten-heading"
-              className="font-serif text-2xl font-semibold tracking-tight text-white sm:text-[1.75rem] lg:text-[2rem]"
+              className="font-serif text-xl font-semibold tracking-tight text-white sm:text-2xl lg:text-[1.75rem]"
             >
               Yapay zekâ gündemini kaçırmayın.
             </h2>
-            <p className="max-w-xl text-sm leading-relaxed text-white/75 sm:text-base">
+            <p className="max-w-xl text-[0.9375rem] leading-relaxed text-white/75 sm:text-base">
               Haftanın önemli yapay zekâ, teknoloji ve iş dünyası gelişmelerini
               kısa ve anlaşılır bir özetle e-posta kutunuza alın.
             </p>
@@ -401,7 +402,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(structuredData) }}
       />
-      <Container className="space-y-12 py-7 sm:space-y-14 sm:py-10 lg:space-y-16">
+      <Container className="space-y-8 py-5 sm:space-y-12 sm:py-8 lg:space-y-14 lg:py-10">
         {!data.hasAnyArticles ? (
           <EmptyState
             icon={Newspaper}
@@ -416,31 +417,16 @@ export default async function HomePage() {
           <>
             <section
               id="one-cikan"
-              aria-labelledby="featured-heading"
-              className="space-y-4"
+              aria-label="Öne çıkan haberler"
+              className="space-y-3 sm:space-y-4"
             >
-              <div className="max-w-2xl space-y-2">
-                <h1
-                  id="featured-heading"
-                  className="font-serif text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
-                >
-                  BYTOK AI
-                </h1>
-                <p className="text-sm leading-relaxed text-foreground/70 sm:text-[0.95rem]">
-                  Yapay zekâ, teknoloji ve dijital dünyanın öne çıkan
-                  gelişmeleri.
-                  <br className="hidden sm:block" /> Türkçe, kaynaklı ve
-                  bağlamı güçlü haberler.
-                </p>
-              </div>
-
-              <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr] lg:items-stretch lg:gap-6">
+              <div className="grid gap-4 lg:grid-cols-[1.45fr_1fr] lg:items-stretch lg:gap-6">
                 {data.lead ? <FeaturedLead article={data.lead} /> : null}
-                <div className="flex flex-col rounded-2xl border border-border/70 bg-card/70 px-4 sm:px-5">
-                  <p className="border-b border-border/70 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-foreground/55">
+                <div className="flex flex-col rounded-xl border border-border/70 bg-card/70 px-3.5 sm:rounded-2xl sm:px-5">
+                  <p className="border-b border-border/70 py-3 font-sans text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-foreground/55 sm:py-3.5 sm:text-xs">
                     Öne çıkanlar
                   </p>
-                  <div className="flex flex-1 flex-col justify-between py-1">
+                  <div className="flex flex-1 flex-col justify-between py-0.5 sm:py-1">
                     {data.featuredSecondary.length > 0 ? (
                       data.featuredSecondary.map((article) => (
                         <FeaturedSideCard
@@ -464,7 +450,7 @@ export default async function HomePage() {
                   title="Son Haberler"
                   description="Yeni yayınlanan editoryal içerikler"
                 />
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
                   {data.latest.map((article) => (
                     <ArticleCard key={article.id} article={article} />
                   ))}

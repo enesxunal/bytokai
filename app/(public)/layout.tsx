@@ -1,3 +1,4 @@
+import { PageTracker } from "@/components/analytics/page-tracker";
 import { BookPublishingCta } from "@/components/book-submissions/book-publishing-cta";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -16,6 +17,7 @@ export default async function PublicSiteLayout({
 
   return (
     <>
+      <PageTracker />
       <SiteHeader categories={categories} />
       <div className="flex-1">{children}</div>
       <BookPublishingCta />

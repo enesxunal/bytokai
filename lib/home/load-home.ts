@@ -7,6 +7,7 @@ import {
 } from "@/lib/database/articles";
 import { getAuthors, type DbAuthor } from "@/lib/database/authors";
 import {
+  getCategories,
   getCategorySection,
   type DbCategory,
 } from "@/lib/database/categories";
@@ -16,18 +17,8 @@ import {
   type PublicSiteSettings,
 } from "@/lib/database/settings";
 
-export const HOME_CATEGORY_SLUGS = [
-  "yapay-zeka",
-  "gelistirici",
-  "is-dunyasi",
-  "arastirma",
-  "yorum",
-] as const;
-
-export type HomeCategorySlug = (typeof HOME_CATEGORY_SLUGS)[number];
-
 export type HomeCategorySection = {
-  slug: HomeCategorySlug;
+  slug: string;
   category: DbCategory | null;
   articles: DbArticleWithRelations[];
 };
@@ -45,18 +36,24 @@ export type HomePageData = {
 
 const FEATURED_SIDE_LIMIT = 3;
 const LATEST_LIMIT = 9;
+const SECTION_ARTICLE_LIMIT = 3;
 
 export async function loadHomePageData(): Promise<HomePageData> {
   const dbConfigured = hasSupabaseEnv();
 
-  const [featured, latest, authors, settings, ...rawSections] =
-    await Promise.all([
-      getFeaturedArticles(FEATURED_SIDE_LIMIT + 1),
-      getLatestArticles(LATEST_LIMIT),
-      getAuthors(5),
-      getSiteSettings(),
-      ...HOME_CATEGORY_SLUGS.map((slug) => getCategorySection(slug, 3)),
-    ]);
+  const [featured, latest, authors, settings, categories] = await Promise.all([
+    getFeaturedArticles(FEATURED_SIDE_LIMIT + 1),
+    getLatestArticles(LATEST_LIMIT),
+    getAuthors(5),
+    getSiteSettings(),
+    getCategories(),
+  ]);
+
+  const rawSections = await Promise.all(
+    categories.map((category) =>
+      getCategorySection(category.slug, SECTION_ARTICLE_LIMIT),
+    ),
+  );
 
   const lead = featured[0] ?? latest[0] ?? null;
 
@@ -70,13 +67,13 @@ export async function loadHomePageData(): Promise<HomePageData> {
   // Allow overlap with hero / öne çıkanlar so sparse catalogs still fill Son Haberler.
   const latestArticles = latest.slice(0, LATEST_LIMIT);
 
-  const sections: HomeCategorySection[] = HOME_CATEGORY_SLUGS.map(
-    (slug, index) => ({
-      slug,
-      category: rawSections[index]?.category ?? null,
+  const sections: HomeCategorySection[] = categories
+    .map((category, index) => ({
+      slug: category.slug,
+      category: rawSections[index]?.category ?? category,
       articles: rawSections[index]?.articles ?? [],
-    }),
-  ).filter((section) => section.articles.length > 0);
+    }))
+    .filter((section) => section.articles.length > 0);
 
   return {
     dbConfigured,

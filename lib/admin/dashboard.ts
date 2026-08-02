@@ -7,6 +7,37 @@ import type { IngestionRun, JobRun } from "@/types";
 
 export type DashboardMetricValue = number | null;
 
+export type DashboardTopArticle = {
+  articleId: string;
+  title: string;
+  slug: string;
+  views: number;
+  totalSeconds: number;
+  avgSeconds: number;
+};
+
+export type DashboardTrafficDay = {
+  /** Istanbul takvim günü: YYYY-MM-DD */
+  date: string;
+  /** Kısa etiket: örn. 02 Ağu */
+  label: string;
+  visitors: number;
+  pageViews: number;
+  avgDurationSeconds: number;
+};
+
+export type DashboardTraffic = {
+  visitorsToday: DashboardMetricValue;
+  pageViewsToday: DashboardMetricValue;
+  avgDurationTodaySeconds: DashboardMetricValue;
+  totalDurationTodaySeconds: DashboardMetricValue;
+  visitorsLast7Days: DashboardMetricValue;
+  pageViewsLast7Days: DashboardMetricValue;
+  daily: DashboardTrafficDay[];
+  topByViews: DashboardTopArticle[];
+  topByTime: DashboardTopArticle[];
+};
+
 export type DashboardOverview = {
   connected: boolean;
   stats: {
@@ -19,6 +50,7 @@ export type DashboardOverview = {
     lastSuccessfulCron: string | null;
     aiSuccessRate: DashboardMetricValue;
   };
+  traffic: DashboardTraffic;
   pipelineBars: Array<{
     key: string;
     label: string;
@@ -45,6 +77,223 @@ const EMPTY_STATS: DashboardOverview["stats"] = {
   lastSuccessfulCron: null,
   aiSuccessRate: null,
 };
+
+const EMPTY_TRAFFIC: DashboardTraffic = {
+  visitorsToday: null,
+  pageViewsToday: null,
+  avgDurationTodaySeconds: null,
+  totalDurationTodaySeconds: null,
+  visitorsLast7Days: null,
+  pageViewsLast7Days: null,
+  daily: [],
+  topByViews: [],
+  topByTime: [],
+};
+
+const DAY_LABEL_FORMATTER = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIMEZONE,
+  day: "2-digit",
+  month: "short",
+});
+
+const DAY_KEY_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone: ISTANBUL_TIMEZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+function istanbulDayKey(iso: string): string {
+  return DAY_KEY_FORMATTER.format(new Date(iso));
+}
+
+function buildDailySeries(
+  rows: PageViewRow[],
+  todayStartIso: string,
+  dayCount = 7,
+): DashboardTrafficDay[] {
+  const todayParts = getIstanbulParts(new Date(todayStartIso));
+  const days: DashboardTrafficDay[] = [];
+
+  for (let offset = dayCount - 1; offset >= 0; offset -= 1) {
+    const wall = new Date(
+      Date.UTC(todayParts.year, todayParts.month - 1, todayParts.day - offset),
+    );
+    const year = wall.getUTCFullYear();
+    const month = wall.getUTCMonth() + 1;
+    const day = wall.getUTCDate();
+    const date = `${year.toString().padStart(4, "0")}-${month
+      .toString()
+      .padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+    const noonUtc = istanbulWallToUtcIso(year, month, day, 12, 0, 0);
+    days.push({
+      date,
+      label: DAY_LABEL_FORMATTER.format(new Date(noonUtc)),
+      visitors: 0,
+      pageViews: 0,
+      avgDurationSeconds: 0,
+    });
+  }
+
+  const byDate = new Map(
+    days.map((d) => [
+      d.date,
+      { visitors: new Set<string>(), pageViews: 0, durations: [] as number[] },
+    ]),
+  );
+
+  for (const row of rows) {
+    const key = istanbulDayKey(row.created_at);
+    const bucket = byDate.get(key);
+    if (!bucket) continue;
+    bucket.visitors.add(row.visitor_id);
+    bucket.pageViews += 1;
+    bucket.durations.push(Math.max(0, Number(row.duration_seconds) || 0));
+  }
+
+  return days.map((day) => {
+    const bucket = byDate.get(day.date)!;
+    return {
+      date: day.date,
+      label: day.label,
+      visitors: bucket.visitors.size,
+      pageViews: bucket.pageViews,
+      avgDurationSeconds: average(bucket.durations) ?? 0,
+    };
+  });
+}
+
+type PageViewRow = {
+  visitor_id: string;
+  article_id: string | null;
+  duration_seconds: number;
+  created_at: string;
+};
+
+function uniqueCount(values: string[]): number {
+  return new Set(values).size;
+}
+
+function average(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const sum = values.reduce((acc, n) => acc + n, 0);
+  return Math.round((sum / values.length) * 10) / 10;
+}
+
+function buildTopArticles(
+  rows: PageViewRow[],
+  articleMeta: Map<string, { title: string; slug: string }>,
+  sortBy: "views" | "time",
+  limit = 8,
+): DashboardTopArticle[] {
+  const byArticle = new Map<
+    string,
+    { views: number; totalSeconds: number }
+  >();
+
+  for (const row of rows) {
+    if (!row.article_id) continue;
+    const current = byArticle.get(row.article_id) ?? {
+      views: 0,
+      totalSeconds: 0,
+    };
+    current.views += 1;
+    current.totalSeconds += Math.max(0, Number(row.duration_seconds) || 0);
+    byArticle.set(row.article_id, current);
+  }
+
+  const list: DashboardTopArticle[] = [];
+  for (const [articleId, stats] of byArticle) {
+    const meta = articleMeta.get(articleId);
+    if (!meta) continue;
+    list.push({
+      articleId,
+      title: meta.title,
+      slug: meta.slug,
+      views: stats.views,
+      totalSeconds: stats.totalSeconds,
+      avgSeconds:
+        stats.views > 0
+          ? Math.round((stats.totalSeconds / stats.views) * 10) / 10
+          : 0,
+    });
+  }
+
+  list.sort((a, b) => {
+    if (sortBy === "views") {
+      if (b.views !== a.views) return b.views - a.views;
+      return b.totalSeconds - a.totalSeconds;
+    }
+    if (b.totalSeconds !== a.totalSeconds) {
+      return b.totalSeconds - a.totalSeconds;
+    }
+    return b.views - a.views;
+  });
+
+  return list.slice(0, limit);
+}
+
+async function loadTrafficStats(
+  supabase: NonNullable<Awaited<ReturnType<typeof getSafeClient>>>,
+  todayStart: string,
+  weekStart: string,
+): Promise<DashboardTraffic> {
+  try {
+    const { data, error } = await supabase
+      .from("page_views")
+      .select("visitor_id, article_id, duration_seconds, created_at")
+      .gte("created_at", weekStart)
+      .limit(20000);
+
+    if (error || !data) {
+      return EMPTY_TRAFFIC;
+    }
+
+    const rows = data as PageViewRow[];
+    const todayRows = rows.filter((row) => row.created_at >= todayStart);
+    const todayDurations = todayRows.map(
+      (row) => Math.max(0, Number(row.duration_seconds) || 0),
+    );
+    const totalDurationToday = todayDurations.reduce((a, b) => a + b, 0);
+
+    const articleIds = [
+      ...new Set(
+        rows
+          .map((row) => row.article_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+
+    const articleMeta = new Map<string, { title: string; slug: string }>();
+    if (articleIds.length > 0) {
+      const { data: articles } = await supabase
+        .from("articles")
+        .select("id, title, slug")
+        .in("id", articleIds.slice(0, 200));
+
+      for (const article of articles ?? []) {
+        articleMeta.set(article.id as string, {
+          title: String(article.title),
+          slug: String(article.slug),
+        });
+      }
+    }
+
+    return {
+      visitorsToday: uniqueCount(todayRows.map((r) => r.visitor_id)),
+      pageViewsToday: todayRows.length,
+      avgDurationTodaySeconds: average(todayDurations),
+      totalDurationTodaySeconds: totalDurationToday,
+      visitorsLast7Days: uniqueCount(rows.map((r) => r.visitor_id)),
+      pageViewsLast7Days: rows.length,
+      daily: buildDailySeries(rows, todayStart),
+      topByViews: buildTopArticles(rows, articleMeta, "views"),
+      topByTime: buildTopArticles(rows, articleMeta, "time"),
+    };
+  } catch {
+    return EMPTY_TRAFFIC;
+  }
+}
 
 function isGeminiConfigured(): boolean {
   return Boolean(process.env.GEMINI_API_KEY?.trim());
@@ -160,6 +409,7 @@ export async function loadDashboardOverview(): Promise<DashboardOverview> {
     return {
       connected: false,
       stats: EMPTY_STATS,
+      traffic: EMPTY_TRAFFIC,
       pipelineBars: [],
       recentJobRuns: [],
       recentIngestionRuns: [],
@@ -168,6 +418,9 @@ export async function loadDashboardOverview(): Promise<DashboardOverview> {
   }
 
   const { start, endExclusive } = getTodayBoundsIso();
+  const weekStart = new Date(
+    new Date(start).getTime() - 6 * 24 * 60 * 60 * 1000,
+  ).toISOString();
 
   try {
     const [
@@ -183,6 +436,7 @@ export async function loadDashboardOverview(): Promise<DashboardOverview> {
       aiFailedCount,
       recentJobsResult,
       recentIngestionResult,
+      traffic,
     ] = await Promise.all([
       headCount(
         supabase
@@ -267,6 +521,7 @@ export async function loadDashboardOverview(): Promise<DashboardOverview> {
         )
         .order("started_at", { ascending: false })
         .limit(8),
+      loadTrafficStats(supabase, start, weekStart),
     ]);
 
     const failedCount =
@@ -334,6 +589,7 @@ export async function loadDashboardOverview(): Promise<DashboardOverview> {
         lastSuccessfulCron,
         aiSuccessRate,
       },
+      traffic,
       pipelineBars: [
         { key: "discovered", label: "Bulunan", value: discoveredToday ?? 0 },
         { key: "generated", label: "Üretilen", value: generatedToday ?? 0 },
@@ -347,6 +603,7 @@ export async function loadDashboardOverview(): Promise<DashboardOverview> {
     return {
       connected: false,
       stats: EMPTY_STATS,
+      traffic: EMPTY_TRAFFIC,
       pipelineBars: [],
       recentJobRuns: [],
       recentIngestionRuns: [],

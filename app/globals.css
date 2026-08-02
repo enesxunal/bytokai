@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* next-themes class strategy — dark: must follow .dark, not OS media query */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* -------------------------------------------------------------------------- */
 /* BYTOK AI — Premium Turkish tech magazine theme                             */
 /* Light: broken-white · Dark: deep navy · Accent: electric blue → cyan       */

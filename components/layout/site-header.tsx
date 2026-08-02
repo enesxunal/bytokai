@@ -21,14 +21,6 @@ const FALLBACK_NAV: NavItem[] = [
   { label: "Yorum", href: "/kategori/yorum" },
 ];
 
-const PRIMARY_SLUGS = new Set([
-  "yapay-zeka",
-  "gelistirici",
-  "is-dunyasi",
-  "arastirma",
-  "yorum",
-]);
-
 export const CORPORATE_NAV: NavItem[] = [
   { label: "Hakkımızda", href: "/hakkimizda" },
   { label: "Kaynaklar", href: "/kaynaklar" },
@@ -44,7 +36,7 @@ type SiteHeaderProps = {
 
 export function buildNavItems(categories: DbCategory[] = []): NavItem[] {
   const fromDb = categories
-    .filter((c) => PRIMARY_SLUGS.has(c.slug))
+    .slice()
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((c) => ({ label: c.name, href: `/kategori/${c.slug}` }));
 
@@ -56,9 +48,9 @@ export function SiteHeader({ categories = [] }: SiteHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur-[6px] supports-[backdrop-filter]:bg-background/85">
-      <Container className="grid h-[72px] grid-cols-[1fr_auto] items-center gap-2 sm:h-[76px] lg:grid-cols-[auto_1fr_auto] lg:gap-6">
+      <Container className="grid h-[76px] grid-cols-[1fr_auto] items-center gap-2 sm:h-[84px] lg:grid-cols-[auto_1fr_auto] lg:gap-6">
         <div className="min-w-0 justify-self-start">
-          <Logo size="md" priority />
+          <Logo size="lg" priority />
         </div>
 
         <DesktopCategoryNav items={items} />
