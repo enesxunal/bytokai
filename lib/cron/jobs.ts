@@ -38,6 +38,13 @@ import {
 } from "@/lib/covers/ensure";
 import type { Author, NormalizedSourceItem } from "@/types";
 
+function needsCoverBranding(coverUrl: string | null | undefined): boolean {
+  if (needsCoverRepair(coverUrl)) return true;
+  if (!coverUrl) return true;
+  // Already mirrored + branded onto our public storage bucket.
+  return !coverUrl.includes("/storage/v1/object/public/article-covers/");
+}
+
 const logger = createLogger("cron.jobs");
 
 export const MAX_SOURCES_PER_INGEST = 8;
@@ -1016,17 +1023,18 @@ export async function runMaintenanceJob(
         const { data: rows, error } = await ctx.supabase
           .from("articles")
           .select(
-            "id, title, cover_image_url, source_url, category:categories(slug, name)",
+            "id, title, cover_image_url, source_url, slug, category:categories(slug, name)",
           )
           .in("status", ["published", "scheduled", "needs_review"])
           .order("updated_at", { ascending: false })
-          .limit(40);
+          .limit(80);
 
         if (error) throw new Error(error.message);
 
         let fixed = 0;
         for (const row of rows ?? []) {
-          if (!needsCoverRepair(row.cover_image_url as string | null)) {
+          const currentUrl = row.cover_image_url as string | null;
+          if (!needsCoverBranding(currentUrl)) {
             continue;
           }
 
@@ -1039,12 +1047,12 @@ export async function runMaintenanceJob(
           const cover = await ensureArticleCover(ctx.supabase, {
             title: row.title as string,
             sourceUrl: (row.source_url as string | null) ?? null,
-            originalImageUrl: (row.cover_image_url as string | null) ?? null,
+            originalImageUrl: needsCoverRepair(currentUrl) ? null : currentUrl,
             categorySlug: cat?.slug ?? null,
             categoryName: cat?.name ?? null,
           });
 
-          if (!cover.url || cover.url === row.cover_image_url) continue;
+          if (!cover.url || cover.url === currentUrl) continue;
 
           const { error: updateError } = await ctx.supabase
             .from("articles")
@@ -1053,11 +1061,16 @@ export async function runMaintenanceJob(
 
           if (!updateError) {
             fixed += 1;
+            const slug = row.slug as string | undefined;
+            if (slug) {
+              revalidatePath(`/haber/${slug}`);
+            }
           }
         }
 
         if (fixed > 0) {
           revalidatePath("/");
+          revalidatePath("/sitemap.xml");
         }
 
         return fixed;
